@@ -58,10 +58,12 @@ struct HashTable {
 HashTable *ht_new(size_t table_size);
 TableEntry *ht_prepend_entry(const char *key, uint64_t hash, Payload payload, TableEntry *next);
 
-HashTable *ht_from_ast(const ASTNode *root);
-
 void ht_add_entry(HashTable *ht, const char *key, Payload payload);
 TableEntry *ht_find_entry(HashTable *ht, const char *key);
+
+HashTable *ht_from_ast(const ASTNode *root);
+
+void ht_print(const HashTable *ht);
 
 void ht_free(HashTable *ht);
 void ht_free_entry(TableEntry *e);

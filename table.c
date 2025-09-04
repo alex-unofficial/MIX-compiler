@@ -1,4 +1,5 @@
 #include "table.h"
+#include "ast.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,6 +67,31 @@ TableEntry *ht_find_entry(HashTable *ht, const char *key) {
 	}
 
 	return NULL;
+}
+
+void ht_print(const HashTable *ht) {
+	for (size_t i = 0 ; i < ht->table_size ; i++) {
+		TableEntry *e = ht->buckets[i];
+
+		while (e != NULL) {
+			switch (e->payload.kind) {
+				case PAYLOAD_METHOD:
+					printf("METHOD (%s): return_type=%s, label='%s', n_params=%d, n_locals=%d\n", 
+							e->key, data_type_str[e->payload.method.return_type], e->payload.method.label,
+							e->payload.method.param_count, e->payload.method.local_count);
+					ht_print(e->payload.method.symbols);
+					break;
+
+				case PAYLOAD_SYMBOL:
+					printf("  SYMBOL (%s): data_type=%s, symbol_kind=%s, offset=%d\n", 
+							e->key, data_type_str[e->payload.symbol.symbol_type], 
+							sym_kind_str[e->payload.symbol.kind], e->payload.symbol.offset);
+					break;
+			}
+
+			e = e->next;
+		}
+	}
 }
 
 void ht_free(HashTable *ht) {

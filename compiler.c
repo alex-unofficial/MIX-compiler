@@ -16,13 +16,21 @@ int main() {
 		exit(1);
 	}
 
+	if (DEBUG) printf("\nSYNTAX TREE:\n");
+	if (DEBUG) printf("-----------\n");
+	if (DEBUG) ast_print(ast_root, 0);
+
 	HashTable *function_table = ht_from_ast(ast_root);
+
+	if (DEBUG) printf("\nSYMBOL TABLE:\n");
+	if (DEBUG) printf("------------\n");
+	if (DEBUG) ht_print(function_table);
+
 	if (semantic_errors > 0) {
 		fprintf(stderr, "Semantic analysis exited with errors.\n");
 		exit(1);
 	}
 
-	if (DEBUG) ast_print(ast_root, 0);
 
 	ht_free(function_table);
 	ast_free(ast_root);
