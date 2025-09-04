@@ -83,9 +83,14 @@ void ht_print(const HashTable *ht) {
 					break;
 
 				case PAYLOAD_SYMBOL:
-					printf("  SYMBOL (%s): data_type=%s, symbol_kind=%s, offset=%d\n", 
-							e->key, data_type_str[e->payload.symbol.symbol_type], 
-							sym_kind_str[e->payload.symbol.kind], e->payload.symbol.offset);
+					const char *symbol_kind_str[] = {
+						[SYMBOL_LOCAL] = "LOCAL",
+						[SYMBOL_PARAM] = "PARAM",
+					};
+
+					printf("  %s (%s): data_type=%s, offset=%+d\n", 
+							symbol_kind_str[e->payload.symbol.kind], e->key,
+							data_type_str[e->payload.symbol.symbol_type], e->payload.symbol.offset);
 					break;
 			}
 
