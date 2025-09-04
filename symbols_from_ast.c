@@ -29,7 +29,7 @@ char *gen_method_label(unsigned int n) {
 	return l;
 }
 
-HashTable *symbols_from_ast(ASTNode *root) {
+HashTable *symbols_from_ast(const ASTNode *root) {
 	if (root->kind != N_PROGRAM) return NULL;
 
 	// Global symbol table of methods

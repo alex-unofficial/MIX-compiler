@@ -55,13 +55,13 @@ struct HashTable {
 	size_t n_entries;
 };
 
-HashTable *symbols_from_ast(ASTNode *root);
+HashTable *symbols_from_ast(const ASTNode *root);
 
 HashTable *new_ht(size_t table_size);
-TableEntry *prepend_entry(char *key, uint64_t hash, Payload payload, TableEntry *next);
+TableEntry *prepend_entry(const char *key, uint64_t hash, Payload payload, TableEntry *next);
 
-void add_ht_entry(HashTable *ht, char *key, Payload payload);
-TableEntry *find_ht_entry(HashTable *ht, char *key);
+void add_ht_entry(HashTable *ht, const char *key, Payload payload);
+TableEntry *find_ht_entry(HashTable *ht, const char *key);
 
 void free_ht(HashTable *ht);
 void free_entry(TableEntry *e);

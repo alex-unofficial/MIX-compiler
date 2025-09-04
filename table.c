@@ -23,7 +23,7 @@ HashTable *new_ht(size_t table_size) {
 	return ht;
 }
 
-TableEntry *prepend_entry(char *key, uint64_t hash, Payload payload, TableEntry *prev) {
+TableEntry *prepend_entry(const char *key, uint64_t hash, Payload payload, TableEntry *prev) {
 	TableEntry *e = malloc(sizeof(TableEntry));
 
 	e->key = strdup(key);
@@ -46,7 +46,7 @@ uint64_t fnv1a64_hash(const char *str) {
 	return h;
 }
 
-void add_ht_entry(HashTable *ht, char *key, Payload payload) {
+void add_ht_entry(HashTable *ht, const char *key, Payload payload) {
 	uint64_t hash = fnv1a64_hash(key);
 	size_t index = hash & (ht->mask);
 
@@ -54,7 +54,7 @@ void add_ht_entry(HashTable *ht, char *key, Payload payload) {
 	ht->n_entries += 1;
 }
 
-TableEntry *find_ht_entry(HashTable *ht, char *key) {
+TableEntry *find_ht_entry(HashTable *ht, const char *key) {
 	uint64_t hash = fnv1a64_hash(key);
 	size_t index = hash & (ht->mask);
 
