@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 
-HashTable *new_ht(size_t table_size) {
+HashTable *ht_new(size_t table_size) {
 	if ((table_size & (table_size - 1)) != 0) {
 		fprintf(stderr, "implementation error: table size must be a power of 2\n");
 		exit(1);
@@ -23,7 +23,7 @@ HashTable *new_ht(size_t table_size) {
 	return ht;
 }
 
-TableEntry *prepend_entry(const char *key, uint64_t hash, Payload payload, TableEntry *prev) {
+TableEntry *ht_prepend_entry(const char *key, uint64_t hash, Payload payload, TableEntry *prev) {
 	TableEntry *e = malloc(sizeof(TableEntry));
 
 	e->key = strdup(key);
@@ -46,15 +46,15 @@ uint64_t fnv1a64_hash(const char *str) {
 	return h;
 }
 
-void add_ht_entry(HashTable *ht, const char *key, Payload payload) {
+void ht_add_entry(HashTable *ht, const char *key, Payload payload) {
 	uint64_t hash = fnv1a64_hash(key);
 	size_t index = hash & (ht->mask);
 
-	ht->buckets[index] = prepend_entry(key, hash, payload, ht->buckets[index]);
+	ht->buckets[index] = ht_prepend_entry(key, hash, payload, ht->buckets[index]);
 	ht->n_entries += 1;
 }
 
-TableEntry *find_ht_entry(HashTable *ht, const char *key) {
+TableEntry *ht_find_entry(HashTable *ht, const char *key) {
 	uint64_t hash = fnv1a64_hash(key);
 	size_t index = hash & (ht->mask);
 
@@ -68,9 +68,9 @@ TableEntry *find_ht_entry(HashTable *ht, const char *key) {
 	return NULL;
 }
 
-void free_ht(HashTable *ht) {
+void ht_free(HashTable *ht) {
 	for (int i = 0 ; i < ht->table_size ; i++) {
-		free_entry(ht->buckets[i]);
+		ht_free_entry(ht->buckets[i]);
 		ht->buckets[i] = NULL;
 	}
 	free(ht->buckets);
@@ -79,12 +79,12 @@ void free_ht(HashTable *ht) {
 	free(ht);
 }
 
-void free_entry(TableEntry *e) {
+void ht_free_entry(TableEntry *e) {
 	while (e != NULL) {
 		TableEntry *next = e->next;
 
 		free(e->key);
-		free_payload(e->payload);
+		ht_free_payload(e->payload);
 		
 		free(e);
 
@@ -92,10 +92,10 @@ void free_entry(TableEntry *e) {
 	}
 }
 
-void free_payload(Payload p) {
+void ht_free_payload(Payload p) {
 	switch(p.kind) {
 		case PAYLOAD_METHOD:
-			free_ht(p.method.symbols);
+			ht_free(p.method.symbols);
 			free(p.method.label);
 			break;
 

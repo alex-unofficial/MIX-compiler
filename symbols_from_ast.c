@@ -29,11 +29,11 @@ char *gen_method_label(unsigned int n) {
 	return l;
 }
 
-HashTable *symbols_from_ast(const ASTNode *root) {
+HashTable *ht_from_ast(const ASTNode *root) {
 	if (root->kind != N_PROGRAM) return NULL;
 
 	// Global symbol table of methods
-	HashTable *ft = new_ht(TABLE_SIZE);
+	HashTable *ft = ht_new(TABLE_SIZE);
 	
 	ASTList *methods_list = root->prog.methods;
 	unsigned int method_count = 0;
@@ -44,7 +44,7 @@ HashTable *symbols_from_ast(const ASTNode *root) {
 		ASTNode *method_node = methods_list->node;
 
 		// Symbol table for this method
-		HashTable *st = new_ht(TABLE_SIZE);
+		HashTable *st = ht_new(TABLE_SIZE);
 
 		// Method parameters
 		ASTList *params_list = method_node->method.params;
@@ -66,9 +66,9 @@ HashTable *symbols_from_ast(const ASTNode *root) {
 				}
 			};
 
-			TableEntry *s = find_ht_entry(st, key);
+			TableEntry *s = ht_find_entry(st, key);
 			if (s == NULL) {
-				add_ht_entry(st, key, p);
+				ht_add_entry(st, key, p);
 			} else {
 				semantic_errors += 1;
 				fprintf(stderr, "In method '%s':\n", method_node->method.name);
@@ -113,9 +113,9 @@ HashTable *symbols_from_ast(const ASTNode *root) {
 					}
 				};
 
-				TableEntry *s = find_ht_entry(st, key);
+				TableEntry *s = ht_find_entry(st, key);
 				if (s == NULL) {
-					add_ht_entry(st, key, p);
+					ht_add_entry(st, key, p);
 				} else {
 					semantic_errors += 1;
 					fprintf(stderr, "In method '%s':\n", method_node->method.name);
@@ -146,9 +146,9 @@ HashTable *symbols_from_ast(const ASTNode *root) {
 			}
 		};
 
-		TableEntry *f = find_ht_entry(ft, key);
+		TableEntry *f = ht_find_entry(ft, key);
 		if (f == NULL) {
-			add_ht_entry(ft, key, p);
+			ht_add_entry(ft, key, p);
 		} else {
 			semantic_errors += 1;
 			fprintf(stderr, "error: method definition '%s' at line %d\n", 

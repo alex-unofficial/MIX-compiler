@@ -16,7 +16,7 @@ int main() {
 		exit(1);
 	}
 
-	HashTable *function_table = symbols_from_ast(ast_root);
+	HashTable *function_table = ht_from_ast(ast_root);
 	if (semantic_errors > 0) {
 		fprintf(stderr, "Semantic analysis exited with errors.\n");
 		exit(1);
@@ -24,7 +24,7 @@ int main() {
 
 	if (DEBUG) ast_print(ast_root, 0);
 
-	free_ht(function_table);
-	ast_free(ast_root); // clean up
+	ht_free(function_table);
+	ast_free(ast_root);
 	return 0;
 }
