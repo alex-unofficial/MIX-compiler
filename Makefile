@@ -35,7 +35,6 @@ $(BISON_C) $(BISON_H): $(BISON_SRC)
 	$(BISON) --header=$(BISON_H) --output=$(BISON_C) $(BISON_SRC)
 
 $(FLEX_C): $(FLEX_SRC) $(BISON_H)
-	@mkdir -p $(BUILD_DIR)
 	$(FLEX) -o $(FLEX_C) $(FLEX_SRC)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
