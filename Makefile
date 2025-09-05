@@ -9,7 +9,7 @@ YACC_C = parser.tab.c
 YACC_H = parser.tab.h
 LEX_C = lex.yy.c
 
-OBJS = parser.tab.o lex.yy.o ast.o table.o ht_from_ast.o ht_check_ast.o compiler.o
+OBJS = parser.tab.o lex.yy.o ast.o table.o label.o ht_from_ast.o ht_check_ast.o compiler.o
 EXEC = compiler
 
 all: $(EXEC)
