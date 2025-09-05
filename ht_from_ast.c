@@ -9,7 +9,9 @@
 #define LABEL_LEN 5
 
 
-char *gen_method_label(unsigned int n) {
+char *gen_method_label() {
+  static unsigned int n = 1;
+
   const size_t buf_len = LABEL_LEN + 1;
   const unsigned int hex_digits = LABEL_LEN - 1;
 
@@ -23,7 +25,7 @@ char *gen_method_label(unsigned int n) {
     mask = ((uint64_t) 1 << (4 * hex_digits)) - 1;
   }
 
-  snprintf(l, buf_len, "F%0*llX", (int)hex_digits, (unsigned long long)(n & mask));
+  snprintf(l, buf_len, "F%0*llX", (int)hex_digits, (unsigned long long)((n++) & mask));
 
   return l;
 }
@@ -40,11 +42,8 @@ unsigned int ht_from_ast(const ASTNode *root, HashTable **ht) {
   HashTable *ft = ht_new(TABLE_SIZE);
   
   const ASTList *methods_list = root->prog.methods;
-  unsigned int method_count = 0;
 
   while (methods_list != NULL) {
-    method_count += 1;
-
     const ASTNode *method_node = methods_list->node;
 
     char *key = method_node->method.name;
@@ -151,7 +150,7 @@ unsigned int ht_from_ast(const ASTNode *root, HashTable **ht) {
           .param_count = param_count,
           .local_count = local_count,
           .symbols = st,
-          .label = gen_method_label(method_count)
+          .label = gen_method_label()
         }
       };
 
