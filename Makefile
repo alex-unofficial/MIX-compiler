@@ -19,9 +19,11 @@ SRCS = $(BISON_C) $(FLEX_C) \
 			 $(SRC_DIR)/ht_check_ast.c $(SRC_DIR)/compiler.c
 
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
-EXEC = $(BUILD_DIR)/compiler
+EXEC = compiler
 
-CFLAGS = -I$(INC_DIR)
+DEBUG_FLAG = 1
+
+CFLAGS = -I$(INC_DIR) -DDEBUG=$(DEBUG_FLAG)
 LDFLAGS = -lfl
 
 all: $(EXEC)
@@ -41,6 +43,6 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR) $(FLEX_C) $(BISON_C) $(BISON_H)
+	rm -rf $(BUILD_DIR) $(FLEX_C) $(BISON_C) $(BISON_H) $(EXEC)
 
 .PHONY: all clean
