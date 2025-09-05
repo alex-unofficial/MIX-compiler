@@ -6,5 +6,6 @@
 #endif
 
 char *gen_method_label();
+char *gen_branch_label();
 
 #endif

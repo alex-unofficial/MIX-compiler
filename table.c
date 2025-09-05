@@ -37,7 +37,7 @@ TableEntry *ht_prepend_entry(const char *key, uint64_t hash, Payload payload, Ta
   return e;
 }
 
-uint64_t fnv1a64_hash(const char *str) {
+static uint64_t fnv1a64_hash(const char *str) {
   // Hash algorithm and parametes: https://en.wikipedia.org/wiki/Fowler-Noll-Vo_hash_function
   uint64_t h = 0xcbf29ce484222325UL; // 64-bit offset basis
   while (*str) {
