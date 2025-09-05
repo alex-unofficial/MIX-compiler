@@ -1,32 +1,46 @@
 CC = gcc
-YACC = bison
-LEX = flex
+BISON = bison
+FLEX = flex
 
-YACC_SRC = parser.y
-LEX_SRC = lexer.l
+SRC_DIR = src
+INC_DIR = include
+BUILD_DIR = build
 
-YACC_C = parser.tab.c
-YACC_H = parser.tab.h
-LEX_C = lex.yy.c
+BISON_SRC = $(SRC_DIR)/parser.y
+FLEX_SRC = $(SRC_DIR)/lexer.l
 
-OBJS = parser.tab.o lex.yy.o ast.o table.o label.o ht_from_ast.o ht_check_ast.o compiler.o
-EXEC = compiler
+BISON_C = $(SRC_DIR)/parser.tab.c
+BISON_H = $(INC_DIR)/parser.tab.h
+FLEX_C = $(SRC_DIR)/lex.yy.c
+
+SRCS = $(BISON_C) $(FLEX_C) \
+			 $(SRC_DIR)/ast.c $(SRC_DIR)/table.c \
+			 $(SRC_DIR)/label.c $(SRC_DIR)/ht_from_ast.c \
+			 $(SRC_DIR)/ht_check_ast.c $(SRC_DIR)/compiler.c
+
+OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+EXEC = $(BUILD_DIR)/compiler
+
+CFLAGS = -I$(INC_DIR)
+LDFLAGS = -lfl
 
 all: $(EXEC)
 
 $(EXEC): $(OBJS)
-	$(CC) -o $@ $(OBJS) -lfl
+	$(CC) -o $@ $(OBJS) $(LDFLAGS)
 
-$(YACC_C) $(YACC_H): $(YACC_SRC)
-	$(YACC) -d $(YACC_SRC)
+$(BISON_C) $(BISON_H): $(BISON_SRC)
+	$(BISON) --header=$(BISON_H) --output=$(BISON_C) $(BISON_SRC)
 
-$(LEX_C): $(LEX_SRC) $(YACC_H)
-	$(LEX) $(LEX_SRC)
+$(FLEX_C): $(FLEX_SRC) $(BISON_H)
+	@mkdir -p $(BUILD_DIR)
+	$(FLEX) -o $(FLEX_C) $(FLEX_SRC)
 
-%.o: %.c
-	$(CC) -c $<
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(EXEC) $(OBJS) $(YACC_C) $(YACC_H) $(LEX_C)
+	rm -rf $(BUILD_DIR) $(FLEX_C) $(BISON_C) $(BISON_H)
 
 .PHONY: all clean
