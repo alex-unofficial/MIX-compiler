@@ -8,7 +8,6 @@
 #define TABLE_SIZE 32
 #define LABEL_LEN 5
 
-extern unsigned int semantic_errors;
 
 char *gen_method_label(unsigned int n) {
 	const size_t buf_len = LABEL_LEN + 1;
@@ -24,24 +23,29 @@ char *gen_method_label(unsigned int n) {
 		mask = ((uint64_t) 1 << (4 * hex_digits)) - 1;
 	}
 
-	snprintf(l, buf_len, "F%0*X", (int)hex_digits, (unsigned int)(n & mask));
+	snprintf(l, buf_len, "F%0*llX", (int)hex_digits, (unsigned long long)(n & mask));
 
 	return l;
 }
 
-HashTable *ht_from_ast(const ASTNode *root) {
-	if (root->kind != N_PROGRAM) return NULL;
+unsigned int ht_from_ast(const ASTNode *root, HashTable **ht) {
+	if (ht == NULL) return 1;
+
+	*ht = NULL;
+	if (root == NULL || root->kind != N_PROGRAM) return 1;
+
+	unsigned int semantic_errors = 0;
 
 	// Global symbol table of methods
 	HashTable *ft = ht_new(TABLE_SIZE);
 	
-	ASTList *methods_list = root->prog.methods;
+	const ASTList *methods_list = root->prog.methods;
 	unsigned int method_count = 0;
 
 	while (methods_list != NULL) {
 		method_count += 1;
 
-		ASTNode *method_node = methods_list->node;
+		const ASTNode *method_node = methods_list->node;
 
 		// Symbol table for this method
 		HashTable *st = ht_new(TABLE_SIZE);
@@ -56,18 +60,19 @@ HashTable *ht_from_ast(const ASTNode *root) {
 			ASTNode *param_node = params_list->node;
 
 			char *key = param_node->param.name;
-			Payload p = {
-				.kind = PAYLOAD_SYMBOL,
-				.loc = param_node->loc,
-				.symbol = {
-					.symbol_type = param_node->param.type,
-					.kind = SYMBOL_PARAM,
-					.offset = param_count + 1
-				}
-			};
 
 			TableEntry *s = ht_find_entry(st, key);
 			if (s == NULL) {
+				Payload p = {
+					.kind = PAYLOAD_SYMBOL,
+					.loc = param_node->loc,
+					.symbol = {
+						.symbol_type = param_node->param.type,
+						.kind = SYMBOL_PARAM,
+						.offset = param_count + 1
+					}
+				};
+
 				ht_add_entry(st, key, p);
 			} else {
 				semantic_errors += 1;
@@ -103,18 +108,19 @@ HashTable *ht_from_ast(const ASTNode *root) {
 				ASTNode *var_node = vars_list->node;
 
 				char *key = var_node->var.name;
-				Payload p = {
-					.kind = PAYLOAD_SYMBOL,
-					.loc = var_node->loc,
-					.symbol = {
-						.symbol_type = decl_type,
-						.kind = SYMBOL_LOCAL,
-						.offset = -local_count
-					}
-				};
 
 				TableEntry *s = ht_find_entry(st, key);
 				if (s == NULL) {
+					Payload p = {
+						.kind = PAYLOAD_SYMBOL,
+						.loc = var_node->loc,
+						.symbol = {
+							.symbol_type = decl_type,
+							.kind = SYMBOL_LOCAL,
+							.offset = -local_count
+						}
+					};
+
 					ht_add_entry(st, key, p);
 				} else {
 					semantic_errors += 1;
@@ -134,20 +140,21 @@ HashTable *ht_from_ast(const ASTNode *root) {
 		}
 
 		char *key = method_node->method.name;
-		Payload p = {
-			.kind = PAYLOAD_METHOD,
-			.loc = method_node->loc,
-			.method = {
-				.return_type = method_node->method.type,
-				.param_count = param_count,
-				.local_count = local_count,
-				.symbols = st,
-				.label = gen_method_label(method_count)
-			}
-		};
 
 		TableEntry *f = ht_find_entry(ft, key);
 		if (f == NULL) {
+			Payload p = {
+				.kind = PAYLOAD_METHOD,
+				.loc = method_node->loc,
+				.method = {
+					.return_type = method_node->method.type,
+					.param_count = param_count,
+					.local_count = local_count,
+					.symbols = st,
+					.label = gen_method_label(method_count)
+				}
+			};
+
 			ht_add_entry(ft, key, p);
 		} else {
 			semantic_errors += 1;
@@ -160,5 +167,7 @@ HashTable *ht_from_ast(const ASTNode *root) {
 		methods_list = methods_list->list;
 	}
 
-	return ft;
+	*ht = ft;
+
+	return semantic_errors;
 }
