@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #ifndef DEBUG
-#define DEBUG 1
+#define DEBUG true
 #endif
 
 int main() {
