@@ -1,19 +1,19 @@
 int method1(int a)
 {
-	int b;
-	b = a + 10;
-	return b;
+  int b;
+  b = a + 10;
+  return b;
 }
 
 int method2(int c, int d)
 {
-	int e;
-	e = method1(c);
-	e = e + d;
-	return e;
+  int e;
+  e = method1(c);
+  e = e + d;
+  return e;
 }
 
 int main()
 {
-	return method2(5, 6);
+  return method2(5, 6);
 }

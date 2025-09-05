@@ -1,30 +1,30 @@
 int foo(int x, int x)
 {
-	int a = x;
+  int a = x;
 
-	return a;
+  return a;
 }
 
 int foo()
 {
-	int b = 0;
+  int b = 0;
 
-	return b;
+  return b;
 }
 
 int bar(int a, int b)
 {
-	int x, b;
+  int x, b;
 
-	return x;
+  return x;
 }
 
 int main()
 {
-	int a = 0;
-	int a = foo(a);
+  int a = 0;
+  int a = foo(a);
 
-	a = bar(a, 0);
+  a = bar(a, 0);
 
-	return a;
+  return a;
 }
