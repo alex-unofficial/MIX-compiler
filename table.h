@@ -59,9 +59,13 @@ HashTable *ht_new(size_t table_size);
 TableEntry *ht_prepend_entry(const char *key, uint64_t hash, Payload payload, TableEntry *next);
 
 void ht_add_entry(HashTable *ht, const char *key, Payload payload);
-TableEntry *ht_find_entry(HashTable *ht, const char *key);
+TableEntry *ht_find_entry(const HashTable *ht, const char *key);
 
 HashTable *ht_from_ast(const ASTNode *root);
+unsigned int ht_check_ast(const ASTNode *node, const HashTable *gt, 
+													const HashTable *lt, const char *scope);
+unsigned int ht_check_ast_list(const ASTList *node, const HashTable *gt, 
+															 const HashTable *lt, const char *scope);
 
 void ht_print(const HashTable *ht);
 

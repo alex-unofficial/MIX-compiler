@@ -8,7 +8,7 @@
 #define TABLE_SIZE 32
 #define LABEL_LEN 5
 
-unsigned int semantic_errors = 0;
+extern unsigned int semantic_errors;
 
 char *gen_method_label(unsigned int n) {
 	const size_t buf_len = LABEL_LEN + 1;

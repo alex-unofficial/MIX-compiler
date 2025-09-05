@@ -55,7 +55,9 @@ void ht_add_entry(HashTable *ht, const char *key, Payload payload) {
 	ht->n_entries += 1;
 }
 
-TableEntry *ht_find_entry(HashTable *ht, const char *key) {
+TableEntry *ht_find_entry(const HashTable *ht, const char *key) {
+	if (ht == NULL || key == NULL) return NULL;
+
 	uint64_t hash = fnv1a64_hash(key);
 	size_t index = hash & (ht->mask);
 
