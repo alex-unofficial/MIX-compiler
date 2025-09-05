@@ -23,13 +23,13 @@ EXEC = compiler
 
 DEBUG_FLAG = true
 
-CFLAGS = -I$(INC_DIR) -DDEBUG=$(DEBUG_FLAG)
+CFLAGS = -I$(INC_DIR) -DDEBUG=$(DEBUG_FLAG) -ggdb
 LDFLAGS = -lfl
 
 all: $(EXEC)
 
 $(EXEC): $(OBJS)
-	$(CC) -o $@ $(OBJS) $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
 $(BISON_C) $(BISON_H): $(BISON_SRC)
 	$(BISON) --header=$(BISON_H) --output=$(BISON_C) $(BISON_SRC)
