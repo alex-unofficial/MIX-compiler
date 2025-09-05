@@ -12,6 +12,7 @@
 int main() {
   ASTNode *ast_root = NULL;
   if (yyparse(&ast_root)) {
+    fprintf(stderr, "\n");
     fprintf(stderr, "Compilation terminated with errors.\n");
     exit(1);
   }
