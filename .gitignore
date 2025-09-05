@@ -2,4 +2,6 @@
 *.tab.*
 *.yy.*
 build/*
+.cache/*
+compile_commands.json
 compiler
