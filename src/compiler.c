@@ -40,14 +40,12 @@ int main(int argc, char ** argv) {
   if (DEBUG) printf("\n");
 
   HashTable *function_table = ht_new(TABLE_SIZE);
-  exit_if (ht_from_ast(ast_root, function_table));
+  exit_if (ht_from_ast(ast_root, function_table, NULL, NULL));
 
   if (DEBUG) printf("SYMBOL TABLE:\n");
   if (DEBUG) printf("------------\n");
   if (DEBUG) ht_print(function_table);
   if (DEBUG) printf("\n");
-
-  exit_if (ht_check_ast(ast_root, function_table, NULL, NULL));
 
   ht_free(function_table);
   ast_free(ast_root);

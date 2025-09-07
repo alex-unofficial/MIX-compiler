@@ -1,140 +1,199 @@
 #include "table.h"
-
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-
-#include "ast.h"
 #include "label.h"
 
-unsigned int ht_from_ast(const ASTNode *root, HashTable *ft) {
-  if (ft == NULL || root == NULL || root->kind != N_PROGRAM) return 1;
+#include <stdio.h>
 
+unsigned int ht_from_ast(const ASTNode *n, HashTable *gt, HashTable *lt, const char *scope) {
+  if (n == NULL) return 0;
+
+  static unsigned int param_count;
+  static unsigned int local_count;
+
+  static enum DataType decl_type;
+
+  TableEntry *e = NULL;
   unsigned int semantic_errors = 0;
 
-  const ASTList *methods_list = root->prog.methods;
+  switch (n->kind) {
+    case N_PROGRAM:
+      return ht_from_ast_list(n->prog.methods, gt, NULL, NULL);
 
-  while (methods_list != NULL) {
-    const ASTNode *method_node = methods_list->node;
+    case N_METHOD:
+      e = ht_find_entry(gt, n->method.name);
+      if (e != NULL) {
+        fprintf(stderr, "error: method definition '%s' at line %d\n", 
+                n->method.name, n->loc.first_line);
+        fprintf(stderr, "  conflicts with definition at line %d\n", e->payload.loc.first_line);
+        fprintf(stderr, "\n");
+        return 1;
 
-    char *key = method_node->method.name;
+      } else {
+        HashTable *st = ht_new(TABLE_SIZE);
 
-    TableEntry *f = ht_find_entry(ft, key);
-    if (f == NULL) {
-      // Symbol table for this method
-      HashTable *st = ht_new(TABLE_SIZE);
+        param_count = 0;
+        local_count = 0;
 
-      // Method parameters
-      ASTList *params_list = method_node->method.params;
-      unsigned int param_count = 0;
+        semantic_errors += ht_from_ast_list(n->method.params, gt, st, n->method.name);
+        semantic_errors += ht_from_ast(n->method.body, gt, st, n->method.name);
 
-      while (params_list != NULL) {
-        param_count += 1;
-
-        ASTNode *param_node = params_list->node;
-
-        char *key = param_node->param.name;
-
-        TableEntry *s = ht_find_entry(st, key);
-        if (s == NULL) {
-          Payload p = {
-            .kind = PAYLOAD_SYMBOL,
-            .loc = param_node->loc,
-            .symbol = {
-              .symbol_type = param_node->param.type,
-              .kind = SYMBOL_PARAM,
-              .offset = param_count + 1
-            }
-          };
-
-          ht_add_entry(st, key, p);
-        } else {
-          semantic_errors += 1;
-          fprintf(stderr, "In method '%s':\n", method_node->method.name);
-          fprintf(stderr, "error: parameter '%s' defined multiple times\n", 
-                  param_node->param.name);
-          fprintf(stderr, "  at line %d, column %d\n", 
-                  s->payload.loc.first_line, s->payload.loc.first_column);
-          fprintf(stderr, "  and line %d, column %d\n", 
-                  param_node->loc.first_line, param_node->loc.first_column);
-          fprintf(stderr, "\n");
-        }
-
-        params_list = params_list->list;
-      }
-
-      // Method locals
-      ASTNode *method_body = method_node->method.body;
-      ASTList *decls_list = method_body->body.decls;
-      
-      unsigned int local_count = 0;
-
-      while (decls_list != NULL) {
-
-        ASTNode *decl_node = decls_list->node;
-        enum DataType decl_type = decl_node->decl.type;
-        
-        ASTList *vars_list = decl_node->decl.vars;
-
-        while (vars_list != NULL) {
-          local_count += 1;
-
-          ASTNode *var_node = vars_list->node;
-
-          char *key = var_node->var.name;
-
-          TableEntry *s = ht_find_entry(st, key);
-          if (s == NULL) {
-            Payload p = {
-              .kind = PAYLOAD_SYMBOL,
-              .loc = var_node->loc,
-              .symbol = {
-                .symbol_type = decl_type,
-                .kind = SYMBOL_LOCAL,
-                .offset = -local_count
-              }
-            };
-
-            ht_add_entry(st, key, p);
-          } else {
-            semantic_errors += 1;
-            fprintf(stderr, "In method '%s':\n", method_node->method.name);
-            fprintf(stderr, "error: variable declaration '%s' at line %d, column %d\n", 
-                    var_node->var.name, var_node->loc.first_line, var_node->loc.first_column);
-            fprintf(stderr, "  conflicts with %s definition at line %d, column %d\n", 
-                    sym_kind_str[s->payload.symbol.kind],
-                    s->payload.loc.first_line, s->payload.loc.first_column);
-            fprintf(stderr, "\n");
+        Payload method_payload = {
+          .kind = PAYLOAD_METHOD,
+          .loc = n->loc,
+          .method = {
+            .return_type = n->method.type,
+            .param_count = param_count,
+            .local_count = local_count,
+            .symbols = st,
+            .label = gen_method_label()
           }
+        };
 
-          vars_list = vars_list->list;
-        }
+        ht_add_entry(gt, n->method.name, method_payload);
         
-        decls_list = decls_list->list;
+        return semantic_errors;
       }
 
-      Payload p = {
-        .kind = PAYLOAD_METHOD,
-        .loc = method_node->loc,
-        .method = {
-          .return_type = method_node->method.type,
-          .param_count = param_count,
-          .local_count = local_count,
-          .symbols = st,
-          .label = gen_method_label()
-        }
-      };
+    case N_PARAM:
+      param_count += 1;
 
-      ht_add_entry(ft, key, p);
-    } else {
-      semantic_errors += 1;
-      fprintf(stderr, "error: method definition '%s' at line %d\n", 
-              method_node->method.name, method_node->loc.first_line);
-      fprintf(stderr, "  conflicts with definition at line %d\n", f->payload.loc.first_line);
-      fprintf(stderr, "\n");
-    }
+      e = ht_find_entry(lt, n->param.name);
+      if (e != NULL) {
+        fprintf(stderr, "In method '%s':\n", scope);
+        fprintf(stderr, "error: parameter '%s' defined multiple times\n", n->param.name);
+        fprintf(stderr, "  at line %d, column %d\n", 
+                e->payload.loc.first_line, e->payload.loc.first_column);
+        fprintf(stderr, "  and line %d, column %d\n", 
+                n->loc.first_line, n->loc.first_column);
+        fprintf(stderr, "\n");
+        return 1;
+      } else {
+        Payload param_payload = {
+          .kind = PAYLOAD_SYMBOL,
+          .loc = n->loc,
+          .symbol = {
+            .symbol_type = n->param.type,
+            .kind = SYMBOL_PARAM,
+            .offset = param_count + 1
+          }
+        };
 
-    methods_list = methods_list->list;
+        ht_add_entry(lt, n->param.name, param_payload);
+        return 0;
+      }
+
+    case N_BODY:
+      semantic_errors += ht_from_ast_list(n->body.decls, gt, lt, scope);
+      semantic_errors += ht_from_ast_list(n->body.stmts, gt, lt, scope);
+      return semantic_errors;
+
+    case N_DECL:
+      decl_type = n->decl.type;
+      return ht_from_ast_list(n->decl.vars, gt, lt, scope);
+
+    case N_VAR:
+      local_count += 1;
+      semantic_errors += ht_from_ast(n->var.expr, gt, lt, scope);
+
+      e = ht_find_entry(lt, n->var.name);
+      if (e != NULL) {
+        fprintf(stderr, "In method '%s':\n", scope);
+        fprintf(stderr, "error: variable declaration '%s' at line %d, column %d\n", 
+                n->var.name, n->loc.first_line, n->loc.first_column);
+        fprintf(stderr, "  conflicts with %s definition at line %d, column %d\n", 
+                sym_kind_str[e->payload.symbol.kind],
+                e->payload.loc.first_line, e->payload.loc.first_column);
+        fprintf(stderr, "\n");
+        semantic_errors += 1;
+      } else {
+        Payload local_payload = {
+          .kind = PAYLOAD_SYMBOL,
+          .loc = n->loc,
+          .symbol = {
+            .symbol_type = decl_type,
+            .kind = SYMBOL_LOCAL,
+            .offset = -local_count
+          }
+        };
+
+        ht_add_entry(lt, n->var.name, local_payload);
+      }
+      return semantic_errors;
+
+    case N_BLOCK:
+      return ht_from_ast_list(n->block.stmts, gt, lt, scope);
+
+    case N_ASSIGN:
+      e = ht_find_entry(lt, n->assign.location);
+      if (e == NULL) {
+        semantic_errors += 1;
+        fprintf(stderr, "In method '%s':\n", scope);
+        fprintf(stderr, "error: variable '%s' at line %d, column %d not declared in scope\n",
+            n->assign.location, n->loc.first_line, n->loc.first_column);
+        fprintf(stderr, "\n");
+      }
+      semantic_errors += ht_from_ast(n->assign.rhs, gt, lt, scope);
+      return semantic_errors;
+
+    case N_IF:
+      semantic_errors += ht_from_ast(n->branch.cond, gt, lt, scope);
+      semantic_errors += ht_from_ast(n->branch.then_branch, gt, lt, scope);
+      semantic_errors += ht_from_ast(n->branch.else_branch, gt, lt, scope);
+      return semantic_errors;
+
+    case N_WHILE:
+      semantic_errors += ht_from_ast(n->branch.cond, gt, lt, scope);
+      semantic_errors += ht_from_ast(n->branch.then_branch, gt, lt, scope);
+      return semantic_errors;
+
+    case N_RETURN:
+      return ht_from_ast(n->ret.expr, gt, lt, scope);
+
+    case N_BREAK:
+      return 0;
+
+    case N_EXPR:
+      semantic_errors += ht_from_ast(n->binop.lhs, gt, lt, scope);
+      semantic_errors += ht_from_ast(n->binop.rhs, gt, lt, scope);
+      return semantic_errors;
+
+    case N_CALL:
+      e = ht_find_entry(gt, n->call.fname);
+      if (e == NULL) {
+        semantic_errors += 1;
+        fprintf(stderr, "In method '%s':\n", scope);
+        fprintf(stderr, "error: method '%s' at line %d, column %d not declared\n",
+            n->call.fname, n->loc.first_line, n->loc.first_column);
+        fprintf(stderr, "\n");
+      }
+      semantic_errors += ht_from_ast_list(n->call.args, gt, lt, scope);
+      return semantic_errors;
+
+    case N_IDENTIFIER:
+      e = ht_find_entry(lt, n->identifier.name);
+      if (e == NULL) {
+        fprintf(stderr, "In method '%s':\n", scope);
+        fprintf(stderr, "error: variable '%s' at line %d, column %d not declared in scope\n",
+            n->identifier.name, n->loc.first_line, n->loc.first_column);
+        fprintf(stderr, "\n");
+        return 1;
+      } else return 0;
+
+    case N_NUMBER:
+      return 0;
+      if (n == NULL) return 0;
+
+    default:
+        fprintf(stderr, "internal error: unknown node kind %d\n", n->kind);
+        return 1;
+  }
+}
+
+unsigned int ht_from_ast_list(const ASTList *l, HashTable *gt, HashTable *lt, const char *scope) {
+  const ASTList *i = l;
+  unsigned int semantic_errors = 0;
+  while (i != NULL) {
+    semantic_errors += ht_from_ast(i->node, gt, lt, scope);
+    i = i->list;
   }
 
   return semantic_errors;

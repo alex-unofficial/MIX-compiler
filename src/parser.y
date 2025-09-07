@@ -221,7 +221,8 @@ ARGS:
 void yyerror(ASTNode **ast, const char *s) {
   extern char *yytext;
   extern YYLTYPE yylloc;
-  fprintf(stderr, "Error: %s near '%s' at line %d, column %d\n",
+  fprintf(stderr, "error: %s near '%s' at line %d, column %d\n",
           s, yytext, yylloc.first_line, yylloc.first_column);
+  fprintf(stderr, "\n");
 }
 
