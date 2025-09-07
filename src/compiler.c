@@ -39,8 +39,8 @@ int main(int argc, char ** argv) {
   if (DEBUG) ast_print(ast_root, 0);
   if (DEBUG) printf("\n");
 
-  HashTable *function_table = ht_new(TABLE_SIZE);
-  exit_if (ht_from_ast(ast_root, function_table, NULL, NULL));
+  HashTable *function_table = NULL;
+  exit_if (ht_from_ast(ast_root, &function_table));
 
   if (DEBUG) printf("SYMBOL TABLE:\n");
   if (DEBUG) printf("------------\n");

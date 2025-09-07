@@ -65,8 +65,7 @@ TableEntry *ht_prepend_entry(const char *key, uint64_t hash, Payload payload, Ta
 void ht_add_entry(HashTable *ht, const char *key, Payload payload);
 TableEntry *ht_find_entry(const HashTable *ht, const char *key);
 
-unsigned int ht_from_ast(const ASTNode *node, HashTable *gt, HashTable *lt, const char *scope);
-unsigned int ht_from_ast_list(const ASTList *node, HashTable *gt, HashTable *lt, const char *scope);
+unsigned int ht_from_ast(const ASTNode *node, HashTable **gt);
 
 void ht_print(const HashTable *ht);
 
