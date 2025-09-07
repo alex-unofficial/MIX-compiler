@@ -17,8 +17,7 @@ static unsigned int _ht_from_ast_list(const ASTList *l, HashTable *gt, struct Sy
 unsigned int ht_from_ast(const ASTNode *n, HashTable **gt) {
   *gt = ht_new(TABLE_SIZE);
 
-  unsigned int semantic_errors = _ht_from_ast(n, *gt, NULL);
-  return semantic_errors;
+  return _ht_from_ast(n, *gt, NULL);
 }
 
 static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolTableContext *ctxt) {
