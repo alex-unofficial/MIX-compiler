@@ -169,10 +169,13 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
     case N_BREAK:
       return 0;
 
-    case N_EXPR:
+    case N_BINOP:
       semantic_errors += _ht_from_ast(n->binop.lhs, gt, ctxt);
       semantic_errors += _ht_from_ast(n->binop.rhs, gt, ctxt);
       return semantic_errors;
+
+    case N_UNARY:
+      return _ht_from_ast(n->unary.expr, gt, ctxt);
 
     case N_CALL:
       e = ht_find_entry(gt, n->call.fname);

@@ -56,8 +56,15 @@ ASTNode *ast_new_call(char *fname, ASTList *args, YYLTYPE loc) {
   return n;
 }
 
-ASTNode *ast_new_expr(enum OpKind op, ASTNode *lhs, ASTNode *rhs, YYLTYPE loc) {
-  ASTNode *n = ast_new_node(N_EXPR, loc);
+ASTNode *ast_new_unary(enum OpKind op, ASTNode *expr, YYLTYPE loc) {
+  ASTNode *n = ast_new_node(N_UNARY, loc);
+  n->unary.op = op;
+  n->unary.expr = expr;
+  return n;
+}
+
+ASTNode *ast_new_binop(enum OpKind op, ASTNode *lhs, ASTNode *rhs, YYLTYPE loc) {
+  ASTNode *n = ast_new_node(N_BINOP, loc);
   n->binop.op = op;
   n->binop.lhs = lhs;
   n->binop.rhs = rhs;
@@ -195,9 +202,13 @@ void ast_free(ASTNode *n) {
         ast_free(n->ret.expr);
         break;
 
-      case N_EXPR:
+      case N_BINOP:
         ast_free(n->binop.lhs);
         ast_free(n->binop.rhs);
+        break;
+
+      case N_UNARY:
+        ast_free(n->unary.expr);
         break;
 
       case N_CALL:
@@ -321,12 +332,18 @@ void ast_print(ASTNode *n, int indent) {
         print_indent(indent); printf("BREAK\n");
         break;
 
-      case N_EXPR:
+      case N_BINOP:
         print_indent(indent); printf("BINOP (%s):\n", op_kind_str[n->binop.op]);
         print_indent(indent); printf("→ LHS:\n");
         ast_print(n->binop.lhs, indent + 1);
         print_indent(indent); printf("→ RHS:\n");
         ast_print(n->binop.rhs, indent + 2);
+        break;
+
+      case N_UNARY:
+        print_indent(indent); printf("UNARY (%s):\n", op_kind_str[n->unary.op]);
+        print_indent(indent); printf("→ EXPR:\n");
+        ast_print(n->unary.expr, indent + 1);
         break;
 
       case N_CALL:

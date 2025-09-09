@@ -1,7 +1,7 @@
 int method1(int a)
 {
   int b;
-  b = ((a + 10) - 10) * 5 / 5;
+  b = ((a+10)-10)*5/5;
   return b;
 }
 

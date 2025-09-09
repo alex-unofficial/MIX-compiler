@@ -94,7 +94,7 @@ int curr_col = 1;
                 return IDENTIFIER;
               }
 
--?([1-9][0-9]*|0) {
+[1-9][0-9]*|0 {
                 yylval.num = atoi(yytext);
                 return NUMBER;
               }

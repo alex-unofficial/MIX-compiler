@@ -20,7 +20,8 @@ enum NodeKind {
 	N_WHILE,
 	N_RETURN,
 	N_BREAK,
-	N_EXPR,
+	N_BINOP,
+	N_UNARY,
 	N_CALL,
 	N_IDENTIFIER,
 	N_NUMBER
@@ -95,8 +96,11 @@ struct ASTNode {
 		// RETURN: optional expression
 		struct { ASTNode *expr; } ret;
 
-		// EXPR: binary operation between lhs and rhs
+		// BINOP: binary operation between lhs and rhs
 		struct { enum OpKind op; ASTNode *lhs; ASTNode *rhs; } binop;
+
+		// UNARY: unary operation on expr
+		struct { enum OpKind op; ASTNode *expr; } unary;
 
 		// CALL: function name and optional parameters
 		struct { char *fname; ASTList *args; } call;
@@ -121,7 +125,8 @@ void ast_list_print(ASTList *l, int indent);
 ASTNode *ast_new_number(int val, YYLTYPE loc);
 ASTNode *ast_new_identifier(char *name, YYLTYPE loc);
 ASTNode *ast_new_call(char *fname, ASTList *args, YYLTYPE loc);
-ASTNode *ast_new_expr(enum OpKind op, ASTNode *lhs, ASTNode *rhs, YYLTYPE loc);
+ASTNode *ast_new_unary(enum OpKind op, ASTNode *expr, YYLTYPE loc);
+ASTNode *ast_new_binop(enum OpKind op, ASTNode *lhs, ASTNode *rhs, YYLTYPE loc);
 ASTNode *ast_new_break(YYLTYPE loc);
 ASTNode *ast_new_return(ASTNode *expr, YYLTYPE loc);
 ASTNode *ast_new_while(ASTNode *cond, ASTNode *then_branch, YYLTYPE loc);

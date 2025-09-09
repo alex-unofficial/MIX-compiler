@@ -47,7 +47,7 @@ void yyerror(ASTNode **ast, const char *s);
   enum OpKind op;
 }
 
-%type <node> PROGRAM METH BODY DECL STMT BLOCK ASSIGN EXPR ADDEXPR TERM FACTOR 
+%type <node> PROGRAM METH BODY DECL STMT BLOCK ASSIGN EXPR ADDEXPR TERM UNARY FACTOR 
 %type <list> METHLIST PARAMS FORMALS DECLS DECLLIST VARS STMTS ACTUALS ARGS
 %type <id> LOCATION METHOD
 
@@ -183,18 +183,29 @@ METHOD:
     ;
 
 EXPR:
-      ADDEXPR RELOP ADDEXPR { $$ = ast_new_expr($2, $1, $3, @$); }
+      ADDEXPR RELOP ADDEXPR { $$ = ast_new_binop($2, $1, $3, @$); }
     | ADDEXPR               { $$ = $1; }
     ;
 
 ADDEXPR:
-      ADDEXPR ADDOP TERM { $$ = ast_new_expr($2, $1, $3, @$); }
+      ADDEXPR ADDOP TERM { $$ = ast_new_binop($2, $1, $3, @$); }
     | TERM               { $$ = $1; }
     ;
 
 TERM:
-      TERM MULOP FACTOR { $$ = ast_new_expr($2, $1, $3, @$); }
-    | FACTOR            { $$ = $1; }
+      TERM MULOP UNARY  { $$ = ast_new_binop($2, $1, $3, @$); }
+    | UNARY             { $$ = $1; }
+    ;
+
+UNARY:
+      ADDOP UNARY {
+        if ($1 == OP_ADDOP_SUB) {
+          $$ = ast_new_unary(OP_ADDOP_SUB, $2, @$);
+        } else {
+          $$ = $2;
+        }
+      }
+    | FACTOR { $$ = $1; }
     ;
 
 FACTOR:
