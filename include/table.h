@@ -18,45 +18,45 @@ enum PayloadKind {PAYLOAD_METHOD, PAYLOAD_SYMBOL};
 
 enum SymKind {SYMBOL_PARAM, SYMBOL_LOCAL};
 static const char *sym_kind_str[] = {
-	[SYMBOL_PARAM] = "parameter",
-	[SYMBOL_LOCAL] = "variable"
+  [SYMBOL_PARAM] = "parameter",
+  [SYMBOL_LOCAL] = "variable"
 };
 
 typedef struct {
-	enum PayloadKind kind;
-	YYLTYPE loc;
-	union {
-		struct {
-			enum DataType return_type;
-			unsigned int param_count;
-			unsigned int local_count;
-			HashTable *symbols;
-			char *label;
-		} method;
+  enum PayloadKind kind;
+  YYLTYPE loc;
+  union {
+    struct {
+      enum DataType return_type;
+      unsigned int param_count;
+      unsigned int local_count;
+      HashTable *symbols;
+      char *label;
+    } method;
 
-		struct {
-			enum DataType symbol_type;
-			enum SymKind kind;
-			int offset; 
-		} symbol;
-	};
+    struct {
+      enum DataType symbol_type;
+      enum SymKind kind;
+      int offset; 
+    } symbol;
+  };
 } Payload;
 
 struct TableEntry {
-	char *key;
-	uint64_t hash;
+  char *key;
+  uint64_t hash;
 
-	Payload payload;
+  Payload payload;
 
-	struct TableEntry *next;
+  struct TableEntry *next;
 };
 
 struct HashTable {
-	size_t table_size;
-	uint64_t mask;
+  size_t table_size;
+  uint64_t mask;
 
-	TableEntry **buckets;
-	size_t n_entries;
+  TableEntry **buckets;
+  size_t n_entries;
 };
 
 HashTable *ht_new(size_t table_size);

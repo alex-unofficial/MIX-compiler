@@ -1,6 +1,7 @@
 #include "parser.tab.h"
 #include "ast.h"
 #include "table.h"
+#include "emit.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +15,11 @@
 // bison and flex input file.
 extern FILE *yyin;
 
+// global output file
+extern FILE *mixout;
+
 int set_input_file(const char *fname, FILE **fp);
+int set_output_file(const char *fname, FILE **fp);
 
 #define exit_if(cond) {                                       \
   if (cond) {                                                 \
@@ -25,10 +30,16 @@ int set_input_file(const char *fname, FILE **fp);
 
 int main(int argc, char ** argv) {
   char *ifname = NULL;
+  char *ofname = NULL;
   if (argc > 1) {
     ifname = argv[1];
-    exit_if (set_input_file(ifname, &yyin));
+    if (argc > 2) {
+      ofname = argv[2];
+    }
   }
+
+  exit_if (set_input_file(ifname, &yyin));
+  exit_if (set_output_file(ofname, &mixout));
 
   ASTNode *ast_root = NULL;
   exit_if (yyparse(&ast_root));
@@ -54,6 +65,8 @@ int main(int argc, char ** argv) {
 }
 
 int set_input_file(const char *fname, FILE **fp) {
+  if (!fname) return 0;
+
   FILE *f = fopen(fname, "r");
 
   if (f == NULL) {
@@ -86,6 +99,39 @@ int set_input_file(const char *fname, FILE **fp) {
     fprintf(stderr, "\n");
 
     fclose(f);
+    return -1;
+  }
+
+  *fp = f;
+
+  return 0;
+}
+
+int set_output_file(const char *fname, FILE **fp) {
+  if (!fname) {
+    *fp = stdout;
+    return 0;
+  }
+
+  FILE *f = fopen(fname, "w");
+
+  if (f == NULL) {
+    int errsv = errno;
+    fprintf(stderr, "error: cannot open or create file '%s':\n", fname);
+    switch (errsv) {
+      case ENOENT:
+        fprintf(stderr, "File path invalid.\n");
+        break;
+
+      case EACCES:
+        fprintf(stderr, "Not permitted.\n");
+        break;
+
+      default:
+        fprintf(stderr, "Error code: %d\n", errsv);
+        break;
+    }
+    fprintf(stderr, "\n");
     return -1;
   }
 
