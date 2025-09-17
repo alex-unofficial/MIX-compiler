@@ -25,11 +25,11 @@ int emit_inst(const char *label,
 
   if (!mixout) return -1;
 
-  fprintf("%-10s", label ? label : "");
-  fprintf(" %-4s", opcode);
-  fprintf(" %-22s", address ? address : "");
+  fprintf(mixout, "%-10s", label ? label : "");
+  fprintf(mixout, " %-4s", opcode);
+  fprintf(mixout, " %-22s", address ? address : "");
   if (comment && comment[0]) {
-    fprintf(" ; %s", comment);
+    fprintf(mixout, " ; %s", comment);
   }
   fputc('\n', mixout);
 

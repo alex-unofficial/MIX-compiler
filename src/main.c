@@ -2,6 +2,7 @@
 #include "ast.h"
 #include "table.h"
 #include "emit.h"
+#include "gen.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,6 +57,12 @@ int main(int argc, char ** argv) {
   if (DEBUG) printf("SYMBOL TABLE:\n");
   if (DEBUG) printf("------------\n");
   if (DEBUG) ht_print(function_table);
+  if (DEBUG) printf("\n");
+
+  if (DEBUG) printf("\n");
+  if (DEBUG) gen_push_var("x", 1);
+  if (DEBUG) gen_push_num(42);
+  if (DEBUG) gen_pop_var("y", 2);
   if (DEBUG) printf("\n");
 
   ht_free(function_table);
