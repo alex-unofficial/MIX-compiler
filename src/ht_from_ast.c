@@ -62,7 +62,7 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
             .param_count = mctxt.param_count,
             .local_count = mctxt.local_count,
             .symbols = st,
-            .label = gen_method_label()
+            .label = label_method()
           }
         };
 

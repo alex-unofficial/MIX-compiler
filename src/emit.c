@@ -37,6 +37,10 @@ int emit_comment(const char *fmt, ...) {
   return 0;
 }
 
+int emit_label(const char *label) {
+  return emit_inst(label, "NOP", NULL, NULL);
+}
+
 int emit_inst(const char *label,
               const char *opcode,
               const char *address,

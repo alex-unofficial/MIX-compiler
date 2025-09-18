@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-static char *gen_label(char prefix, unsigned int index) {
+static char *label_fmt(char prefix, unsigned int index) {
 
   const size_t buf_len = LABEL_LEN + 1;
   const unsigned int hex_digits = LABEL_LEN - 1;
@@ -19,12 +19,8 @@ static char *gen_label(char prefix, unsigned int index) {
   return l;
 }
 
-char *gen_method_label() {
+char *label_method() {
   static unsigned int method_index = 1;
-  return gen_label('F', method_index++);
+  return label_fmt('F', method_index++);
 }
 
-char *gen_branch_label() {
-  static unsigned int branch_index = 1;
-  return gen_label('L', branch_index++);
-}

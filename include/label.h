@@ -5,7 +5,6 @@
 #define LABEL_LEN 5
 #endif
 
-char *gen_method_label();
-char *gen_branch_label();
+char *label_method();
 
 #endif

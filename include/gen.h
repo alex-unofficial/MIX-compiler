@@ -17,7 +17,12 @@
 int gen_method_entry(const char *method_name, const char *label, unsigned int n_locals);
 int gen_method_exit(const char *method_name, unsigned int n_params);
 int gen_method_return();
-int gen_method_call(const char *method_name, const char *label); // call subroutine
+int gen_method_call(const char *method_name, const char *label);
+
+/* branch operations */
+int gen_branch_label(const char *l_label);          // initialize branch label
+int gen_branch_entry(const char *l_break);          // set jump on condition fail
+int gen_branch_jmp(const char *l_branch);           // set jump to branch continue
 
 /* stack insertion, deletion opetations */
 int gen_push_var(const char *var_name, int offset); // push variable to stack
@@ -36,7 +41,5 @@ int gen_relop_gt();  // relation (>) operation
 int gen_relop_geq(); // relation (>=) operation
 int gen_relop_eq();  // relation (==) operation
 int gen_relop_neq(); // relation (!=) operation
-
-// binary operations
 
 #endif

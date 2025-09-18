@@ -387,6 +387,34 @@ int gen_relop_neq() {
   return 0;
 }
 
+int gen_branch_label(const char *label) {
+  // create label at location
+  return emit_label(label);
+}
+
+int gen_branch_entry(const char *l_break) {
+  char comment[64];
+
+  // pop rA from stack
+  if (gen_pop_reg('A')) return -1;
+
+  // on condition fail, jump to l_break
+  if (snprintf(comment, sizeof(comment), "cond = false? jump to %s", l_break)
+      >= (int)sizeof(comment)) return -1;
+  if (emit_inst(NULL, "JAZ", l_break, comment)) return -1;
+
+  return 0;
+}
+
+int gen_branch_jmp(const char *l_continue) {
+  char comment[64];
+
+  // jump to l_continue
+  if (snprintf(comment, sizeof(comment), "jump to %s", l_continue)
+      >= (int)sizeof(comment)) return -1;
+  if (emit_inst(NULL, "JMP", l_continue, comment)) return -1;
+}
+
 int gen_method_entry(const char *method_name, const char *label, unsigned int n_locals) {
   char address[32];
   char comment[64];
