@@ -17,6 +17,8 @@ static unsigned int _ht_from_ast_list(const ASTList *l, HashTable *gt, struct Sy
 unsigned int ht_from_ast(const ASTNode *n, HashTable **gt) {
   *gt = ht_new(TABLE_SIZE);
 
+  // TODO: check main function exists
+
   return _ht_from_ast(n, *gt, NULL);
 }
 
@@ -187,6 +189,7 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
         fprintf(stderr, "\n");
       }
       semantic_errors += _ht_from_ast_list(n->call.args, gt, ctxt);
+      // TODO: check arg count matches with definition
       return semantic_errors;
 
     case N_IDENTIFIER:
