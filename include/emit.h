@@ -8,9 +8,10 @@
 extern FILE *mixout;
 
 int emit_line(const char *fmt, ...);
+int emit_comment(const char *fmt, ...);
 
 int emit_inst(const char *label,
-              const char *opmnen,
+              const char *opcode,
               const char *addexp,
               const char *comment);
 
