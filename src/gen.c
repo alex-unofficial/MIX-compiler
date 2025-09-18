@@ -106,18 +106,6 @@ int gen_pop_var(const char *var_name, int offset) {
   return 0;
 }
 
-int gen_call_meth(const char *method_name, const char *label) {
-  char comment[64];
-
-  emit_comment("Call method %s on stack (pop params, push result)", method_name);
-
-  if (snprintf(comment, sizeof(comment), "jump to %s ≡ %s", label, method_name)
-      >= (int)sizeof(comment)) return -1;
-  if (emit_inst(NULL, "JMP", label, comment)) return -1;
-
-  return 0;
-}
-
 int gen_unary_neg() {
   char address[32];
 
@@ -398,3 +386,98 @@ int gen_relop_neq() {
 
   return 0;
 }
+
+int gen_method_entry(const char *method_name, const char *label, unsigned int n_locals) {
+  char address[32];
+  char comment[64];
+
+  emit_comment("Subroutine %s entry (store RA & FP, FP ← SP, alloc n_locals)",
+               method_name);
+  
+  // push RA to stack
+  if (snprintf(address, sizeof(address), "STACK+1,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(label, "STJ", address, "STACK[SP+1] ← RA ≡ rJ")) return -1;
+
+  // push FP to stack
+  if (snprintf(address, sizeof(address), "STACK+2,%u(0:2)", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, ST(REG_FP), address, "STACK[SP+2] ← FP")) return -1;
+
+  // set FP ← SP
+  if (snprintf(address, sizeof(address), "2,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, ENT(REG_FP), address, "FP ← SP + 2")) return -1;
+
+  // allocate stack space for n_locals
+  if (snprintf(address, sizeof(address), "%u", n_locals + 2)
+      >= (int)sizeof(address)) return -1;
+  if (snprintf(comment, sizeof(comment), "SP ← SP + %u", n_locals + 2)
+      >= (int)sizeof(comment)) return -1;
+  if (emit_inst(NULL, INC(REG_SP), address, comment)) return -1;
+
+  return 0;
+}
+
+int gen_method_exit(const char *method_name, unsigned int n_params) {
+  char address[32];
+  char comment[64];
+
+  emit_comment("Subroutine %s exit (restore FP & SP, dealloc params, push result, jump to RA)",
+               method_name);
+
+  // pop result from stack
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst("9H", "LDA", address, "rA ← result ≡ STACK[SP]")) return -1;
+  if (emit_inst(NULL, DEC(REG_SP), "1", "SP ← SP - 1")) return -1;
+
+  // set SP ← FP (dealloc locals)
+  if (snprintf(address, sizeof(address), "0,%u", REG_FP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, ENT(REG_SP), address, "SP ← FP")) return -1;
+
+  // pop FP
+  if (snprintf(address, sizeof(address), "STACK,%u(0:2)", REG_FP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, LD(REG_FP), address, "FP ← old FP ≡ STACK[SP]")) return -1;
+
+  // pop RA
+  if (snprintf(address, sizeof(address), "STACK-1,%u(0:2)", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, "LD1", address, "rI1 ← RA ≡ STACK[SP-1]")) return -1;
+
+  // allocate stack space for n_locals
+  if (snprintf(address, sizeof(address), "%u", n_params + 2)
+      >= (int)sizeof(address)) return -1;
+  if (snprintf(comment, sizeof(comment), "SP ← SP - %u", n_params + 2)
+      >= (int)sizeof(comment)) return -1;
+  if (emit_inst(NULL, DEC(REG_SP), address, comment)) return -1;
+
+  // push result to stack
+  if (gen_push_reg('A')) return -1;
+
+  // return to RA
+  if (emit_inst(NULL, "JMP", "0,1", "jump to RA")) return -1;
+
+  return 0;
+}
+
+int gen_method_return() {
+  emit_comment("Return from subroutine (return value is top of the stack)");
+  if (emit_inst(NULL, "JMP", "9F", "jump to method exit")) return -1;
+  return 0;
+}
+
+int gen_method_call(const char *method_name, const char *label) {
+  char comment[64];
+
+  emit_comment("Call method %s (pop params, push result)", method_name);
+
+  if (snprintf(comment, sizeof(comment), "jump to %s ≡ %s", label, method_name)
+      >= (int)sizeof(comment)) return -1;
+  if (emit_inst(NULL, "JMP", label, comment)) return -1;
+
+  return 0;
+}
+

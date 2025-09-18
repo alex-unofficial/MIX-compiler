@@ -5,18 +5,24 @@
 #define REG_FP 5
 
 #define STR(x) #x
+#define CHAR(x) ('0' + (x))
 #define INC(reg) "INC" STR(reg)
 #define DEC(reg) "DEC" STR(reg)
 #define ENT(reg) "ENT" STR(reg)
+#define LD(reg)  "LD"  STR(reg)
+#define ST(reg)  "ST"  STR(reg)
 
+
+/* subroutine opetations */
+int gen_method_entry(const char *method_name, const char *label, unsigned int n_locals);
+int gen_method_exit(const char *method_name, unsigned int n_params);
+int gen_method_return();
+int gen_method_call(const char *method_name, const char *label); // call subroutine
 
 /* stack insertion, deletion opetations */
 int gen_push_var(const char *var_name, int offset); // push variable to stack
 int gen_pop_var(const char *var_name, int offset);  // pop variable from stack
 int gen_push_num(int value);                        // push number to stack
-
-/* subroutine opetations */
-int gen_call_meth(const char *method_name, const char *label); // call subroutine
 
 /* numerical and logical operations */
 int gen_unary_neg(); // unary (-) operation
