@@ -11,6 +11,8 @@ static int gen_push_reg(char reg) {
   // increment SP
   if (emit_inst(NULL, INC(REG_SP), "1", "SP ← SP + 1")) return -1;
 
+  // TODO: handle stack overflow
+
   // push register to stack (store at top of stack)
   if (snprintf(inst, sizeof(inst), "ST%c", reg)
       >= (int)sizeof(inst)) return -1;
@@ -29,6 +31,8 @@ static int gen_pop_reg(char reg) {
   char comment[64];
 
   const char *reg_str = (reg >= '1' && reg <= '6') ? "rI" : "r";
+
+  // TODO: handle stack underflow
 
   // pop register from stack (load from top of stack)
   if (snprintf(inst, sizeof(inst), "LD%c", reg)
@@ -102,4 +106,295 @@ int gen_pop_var(const char *var_name, int offset) {
   return 0;
 }
 
+int gen_call_meth(const char *method_name, const char *label) {
+  char comment[64];
 
+  emit_comment("Call method %s on stack (pop params, push result)", method_name);
+
+  if (snprintf(comment, sizeof(comment), "jump to %s ≡ %s", label, method_name)
+      >= (int)sizeof(comment)) return -1;
+  if (emit_inst(NULL, "JMP", label, comment)) return -1;
+
+  return 0;
+}
+
+int gen_unary_neg() {
+  char address[32];
+
+  emit_comment("Negation operation on stack (pop A, push -A)");
+
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP) 
+      >= (int)sizeof(address)) return -1;
+  // pop rA from stack negated
+  if (emit_inst(NULL, "LDAN", address, "rA ← -STACK[SP]")) return -1;
+
+  /* if this were a real stack machine, 
+     it would decrement then increment SP by 1 here. 
+     But that would be pointless to emulate and waste instruction cycles. */
+
+  // store rA to STACK[SP]
+  if (emit_inst(NULL, "STA", address, "STACK[SP] ← rA")) return -1;
+
+  return 0;
+}
+
+int gen_binop_add() {
+  char address[32];
+
+  emit_comment("Addition operation on stack (pop A, pop B, push A + B)");
+
+  // pop rA from stack
+  if (gen_pop_reg('A')) return -1;
+
+  // pop from stack and add to rA
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, "ADD", address, "rA ← rA + STACK[SP]")) return -1;
+
+  /* if this were a real stack machine, 
+     it would decrement then increment SP by 1 here. 
+     But that would be pointless to emulate and waste instruction cycles. */
+  
+  // write rA back to the stack
+  if (emit_inst(NULL, "STA", address, "STACK[SP] ← rA")) return -1;
+
+  return 0;
+}
+
+int gen_binop_sub() {
+  char address[32];
+
+  emit_comment("Subtraction operation on stack (pop A, pop B, push A - B)");
+
+  // pop rA from stack
+  if (gen_pop_reg('A')) return -1;
+
+  // pop from stack and subtract from rA
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, "SUB", address, "rA ← rA - STACK[SP]")) return -1;
+
+  /* if this were a real stack machine, 
+     it would decrement then increment SP by 1 here. 
+     But that would be pointless to emulate and waste instruction cycles. */
+  
+  // write rA back to the stack
+  if (emit_inst(NULL, "STA", address, "STACK[SP] ← rA")) return -1;
+
+  return 0;
+}
+
+int gen_binop_mul() {
+  char address[32];
+
+  emit_comment("Multiplication operation on stack (pop A, pop B, push A * B)");
+
+  // pop rA from stack
+  if (gen_pop_reg('A')) return -1;
+
+  // pop from stack and multiply with rA
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, "MUL", address, "rAX ← rA * STACK[SP]")) return -1;
+
+  /* if this were a real stack machine, 
+     it would decrement then increment SP by 1 here. 
+     But that would be pointless to emulate and waste instruction cycles. */
+
+  // write rX (low word of rAX) back to the stack
+  if (emit_inst(NULL, "STX", address, "STACK[SP] ← rX")) return -1;
+
+  return 0;
+}
+
+int gen_binop_div() {
+  char address[32];
+
+  emit_comment("Division operation on stack (pop A, pop B, push A / B)");
+
+  // pop rAX from stack
+  if (emit_inst(NULL, "ENTA", "0", "rA <- 0")) return -1;
+  if (gen_pop_reg('X')) return -1;
+
+  // pop from stack and divide rAX
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, "DIV", address, "rA ← rAX / STACK[SP]")) return -1;
+
+  /* if this were a real stack machine, 
+     it would decrement then increment SP by 1 here. 
+     But that would be pointless to emulate and waste instruction cycles. */
+
+  // write rA (division result) back to the stack
+  if (emit_inst(NULL, "STA", address, "STACK[SP] ← rA")) return -1;
+
+  return 0;
+}
+
+int gen_relop_leq() {
+  char address[32];
+
+  emit_comment("Comparison operation (<=) on stack (pop A, pop B, push A <= B)");
+
+  // pop rA from stack
+  if (gen_pop_reg('A')) return -1;
+
+  // pop from stack and compare with rA
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, "CMPA", address, "CI ← rA ? STACK[SP]")) return -1;
+
+  /* if this were a real stack machine, 
+     it would decrement SP by 1 here (...) */   
+
+  if (emit_inst(NULL, "ENTX", "1", "rX ← 1")) return -1;
+  if (emit_inst(NULL, "JLE", "1F", "lhs <= rhs? continue")) return -1;
+  if (emit_inst(NULL, "ENTX", "0", "else, overwrite rX ← 0")) return -1;
+
+  /* (...) then increment SP by 1 here.
+     But that would be pointless to emulate and waste instruction cycles. */
+
+  if (emit_inst("1H", "STX", address, "STACK[SP] ← rX")) return -1;
+
+  return 0;
+}
+
+int gen_relop_lt() {
+  char address[32];
+
+  emit_comment("Comparison operation (<) on stack (pop A, pop B, push A < B)");
+
+  // pop rA from stack
+  if (gen_pop_reg('A')) return -1;
+
+  // pop from stack and compare with rA
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, "CMPA", address, "CI ← rA ? STACK[SP]")) return -1;
+
+  /* if this were a real stack machine, 
+     it would decrement SP by 1 here (...) */   
+
+  if (emit_inst(NULL, "ENTX", "1", "rX ← 1")) return -1;
+  if (emit_inst(NULL, "JL",  "1F", "lhs < rhs? continue")) return -1;
+  if (emit_inst(NULL, "ENTX", "0", "else, overwrite rX ← 0")) return -1;
+
+  /* (...) then increment SP by 1 here.
+     But that would be pointless to emulate and waste instruction cycles. */
+
+  if (emit_inst("1H", "STX", address, "STACK[SP] ← rX")) return -1;
+
+  return 0;
+}
+
+int gen_relop_gt() {
+  char address[32];
+
+  emit_comment("Comparison operation (>) on stack (pop A, pop B, push A > B)");
+
+  // pop rA from stack
+  if (gen_pop_reg('A')) return -1;
+
+  // pop from stack and compare with rA
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, "CMPA", address, "CI ← rA ? STACK[SP]")) return -1;
+
+  /* if this were a real stack machine, 
+     it would decrement SP by 1 here (...) */   
+
+  if (emit_inst(NULL, "ENTX", "1", "rX ← 1")) return -1;
+  if (emit_inst(NULL, "JG",  "1F", "lhs > rhs? continue")) return -1;
+  if (emit_inst(NULL, "ENTX", "0", "else, overwrite rX ← 0")) return -1;
+
+  /* (...) then increment SP by 1 here.
+     But that would be pointless to emulate and waste instruction cycles. */
+
+  if (emit_inst("1H", "STX", address, "STACK[SP] ← rX")) return -1;
+
+  return 0;
+}
+
+int gen_relop_geq() {
+  char address[32];
+
+  emit_comment("Comparison operation (>=) on stack (pop A, pop B, push A >= B)");
+
+  // pop rA from stack
+  if (gen_pop_reg('A')) return -1;
+
+  // pop from stack and compare with rA
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, "CMPA", address, "CI ← rA ? STACK[SP]")) return -1;
+
+  /* if this were a real stack machine, 
+     it would decrement SP by 1 here (...) */   
+
+  if (emit_inst(NULL, "ENTX", "1", "rX ← 1")) return -1;
+  if (emit_inst(NULL, "JGE", "1F", "lhs >= rhs? continue")) return -1;
+  if (emit_inst(NULL, "ENTX", "0", "else, overwrite rX ← 0")) return -1;
+
+  /* (...) then increment SP by 1 here.
+     But that would be pointless to emulate and waste instruction cycles. */
+
+  if (emit_inst("1H", "STX", address, "STACK[SP] ← rX")) return -1;
+
+  return 0;
+}
+
+int gen_relop_eq() {
+  char address[32];
+
+  emit_comment("Comparison operation (==) on stack (pop A, pop B, push A == B)");
+
+  // pop rA from stack
+  if (gen_pop_reg('A')) return -1;
+
+  // pop from stack and compare with rA
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, "CMPA", address, "CI ← rA ? STACK[SP]")) return -1;
+
+  /* if this were a real stack machine, 
+     it would decrement SP by 1 here (...) */   
+
+  if (emit_inst(NULL, "ENTX", "1", "rX ← 1")) return -1;
+  if (emit_inst(NULL, "JE",  "1F", "lhs == rhs? continue")) return -1;
+  if (emit_inst(NULL, "ENTX", "0", "else, overwrite rX ← 0")) return -1;
+
+  /* (...) then increment SP by 1 here.
+     But that would be pointless to emulate and waste instruction cycles. */
+
+  if (emit_inst("1H", "STX", address, "STACK[SP] ← rX")) return -1;
+
+  return 0;
+}
+
+int gen_relop_neq() {
+  char address[32];
+
+  emit_comment("Comparison operation (!=) on stack (pop A, pop B, push A != B)");
+
+  // pop rA from stack
+  if (gen_pop_reg('A')) return -1;
+
+  // pop from stack and compare with rA
+  if (snprintf(address, sizeof(address), "STACK,%u", REG_SP)
+      >= (int)sizeof(address)) return -1;
+  if (emit_inst(NULL, "CMPA", address, "CI ← rA ? STACK[SP]")) return -1;
+
+  /* if this were a real stack machine, 
+     it would decrement SP by 1 here (...) */   
+
+  if (emit_inst(NULL, "ENTX", "1", "rX ← 1")) return -1;
+  if (emit_inst(NULL, "JNE", "1F", "lhs != rhs? continue")) return -1;
+  if (emit_inst(NULL, "ENTX", "0", "else, overwrite rX ← 0")) return -1;
+
+  /* (...) then increment SP by 1 here.
+     But that would be pointless to emulate and waste instruction cycles. */
+
+  if (emit_inst("1H", "STX", address, "STACK[SP] ← rX")) return -1;
+
+  return 0;
+}

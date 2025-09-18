@@ -62,7 +62,19 @@ int main(int argc, char ** argv) {
   if (DEBUG) printf("\n");
   if (DEBUG) gen_push_var("x", 1);
   if (DEBUG) gen_push_num(42);
+  if (DEBUG) gen_call_meth("add", "F0002");
   if (DEBUG) gen_pop_var("y", 2);
+  if (DEBUG) gen_unary_neg();
+  if (DEBUG) gen_binop_add();
+  if (DEBUG) gen_binop_sub();
+  if (DEBUG) gen_binop_mul();
+  if (DEBUG) gen_binop_div();
+  if (DEBUG) gen_relop_leq();
+  if (DEBUG) gen_relop_lt();
+  if (DEBUG) gen_relop_gt();
+  if (DEBUG) gen_relop_geq();
+  if (DEBUG) gen_relop_eq();
+  if (DEBUG) gen_relop_neq();
   if (DEBUG) printf("\n");
 
   ht_free(function_table);

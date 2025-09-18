@@ -10,9 +10,27 @@
 #define ENT(reg) "ENT" STR(reg)
 
 
-int gen_push_var(const char *var_name, int offset);
-int gen_push_num(int value);
+/* stack insertion, deletion opetations */
+int gen_push_var(const char *var_name, int offset); // push variable to stack
+int gen_pop_var(const char *var_name, int offset);  // pop variable from stack
+int gen_push_num(int value);                        // push number to stack
 
-int gen_pop_var(const char *var_name, int offset);
+/* subroutine opetations */
+int gen_call_meth(const char *method_name, const char *label); // call subroutine
+
+/* numerical and logical operations */
+int gen_unary_neg(); // unary (-) operation
+int gen_binop_add(); // binary (+) operation
+int gen_binop_sub(); // binary (-) operation
+int gen_binop_mul(); // binary (*) operation
+int gen_binop_div(); // binary (/) operation
+int gen_relop_leq(); // relation (<=) operation
+int gen_relop_lt();  // relation (<) operation
+int gen_relop_gt();  // relation (>) operation
+int gen_relop_geq(); // relation (>=) operation
+int gen_relop_eq();  // relation (==) operation
+int gen_relop_neq(); // relation (!=) operation
+
+// binary operations
 
 #endif
