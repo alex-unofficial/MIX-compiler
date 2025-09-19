@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+unsigned int method_index = 1;
+
 struct SymbolTableContext {
   HashTable *lt;
   char *scope;
@@ -62,7 +64,7 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
             .param_count = mctxt.param_count,
             .local_count = mctxt.local_count,
             .symbols = st,
-            .label = label_method()
+            .label = label_method(method_index++)
           }
         };
 
@@ -91,7 +93,7 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
           .symbol = {
             .symbol_type = n->param.type,
             .kind = SYMBOL_PARAM,
-            .offset = ctxt->param_count + 1
+            .offset = -(ctxt->param_count + 1)
           }
         };
 
@@ -129,7 +131,7 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
           .symbol = {
             .symbol_type = ctxt->decl_type,
             .kind = SYMBOL_LOCAL,
-            .offset = -ctxt->local_count
+            .offset = ctxt->local_count
           }
         };
 
