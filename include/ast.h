@@ -117,6 +117,7 @@ struct ASTNode {
 ASTNode *ast_new_node(enum NodeKind kind, YYLTYPE loc);
 ASTList *ast_list_prepend(ASTList *list, ASTNode *node);
 ASTList *ast_list_reverse(ASTList *head);
+unsigned int ast_list_size(ASTList *head);
 
 void ast_print(ASTNode *n, int indent);
 void ast_list_print(ASTList *l, int indent);

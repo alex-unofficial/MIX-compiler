@@ -9,6 +9,6 @@ int main()
 {
   int a = 5;
   int b = method2(a);
-  return method1(b);
+  return method1(a, b);
 }
 

@@ -37,6 +37,18 @@ ASTList *ast_list_reverse(ASTList *head) {
   return prev;
 }
 
+unsigned int ast_list_size(ASTList *head) {
+  unsigned int size = 0;
+  ASTList *current = head;
+
+  while (current != NULL) {
+    size += 1;
+    current = current->list;
+  }
+
+  return size;
+}
+
 ASTNode *ast_new_number(int val, YYLTYPE loc) {
   ASTNode *n = ast_new_node(N_NUMBER, loc);
   n->number.val = val;

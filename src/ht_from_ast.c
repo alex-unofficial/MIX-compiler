@@ -1,3 +1,4 @@
+#include "ast.h"
 #include "table.h"
 #include "label.h"
 
@@ -17,11 +18,19 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
 static unsigned int _ht_from_ast_list(const ASTList *l, HashTable *gt, struct SymbolTableContext *ctxt);
 
 unsigned int ht_from_ast(const ASTNode *n, HashTable **gt) {
+  unsigned int semantic_errors = 0;
   *gt = ht_new(TABLE_SIZE);
 
-  // TODO: check main function exists
+  semantic_errors += _ht_from_ast(n, *gt, NULL);
 
-  return _ht_from_ast(n, *gt, NULL);
+  TableEntry *e = ht_find_entry(*gt, "main");
+  if (e == NULL) {
+    semantic_errors += 1;
+    fprintf(stderr, "error: 'main' method not defined\n");
+    fprintf(stderr, "\n");
+  }
+
+  return semantic_errors;
 }
 
 static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolTableContext *ctxt) {
@@ -189,9 +198,23 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
         fprintf(stderr, "error: method '%s' at line %d, column %d not declared\n",
             n->call.fname, n->loc.first_line, n->loc.first_column);
         fprintf(stderr, "\n");
+      } else {
+        unsigned int arg_count = ast_list_size(n->call.args);
+        unsigned int param_count = e->payload.method.param_count;
+        if (arg_count != param_count) {
+          semantic_errors += 1;
+          const char *temp = (arg_count < param_count)? "few" : "many";
+          fprintf(stderr, "In method '%s':\n", ctxt->scope);
+          fprintf(stderr, "error: too %s argumenst to method '%s' at line %d, column %d;",
+              temp, n->call.fname, n->loc.first_line, n->loc.first_column);
+          fprintf(stderr, " expected %u, have %u\n",
+              e->payload.method.param_count, arg_count);
+          fprintf(stderr, "\n");
+        }
       }
+
       semantic_errors += _ht_from_ast_list(n->call.args, gt, ctxt);
-      // TODO: check arg count matches with definition
+
       return semantic_errors;
 
     case N_IDENTIFIER:
