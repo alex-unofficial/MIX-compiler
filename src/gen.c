@@ -473,7 +473,7 @@ int gen_method_exit(const char *method_name, unsigned int n_params) {
   // pop RA
   if (snprintf(address, sizeof(address), "STACK-1,%u(0:2)", REG_SP)
       >= (int)sizeof(address)) return -1;
-  if (emit_inst(NULL, "LD1", address, "rI1 ← RA ≡ STACK[SP-1]")) return -1;
+  if (emit_inst(NULL, "LD4", address, "rI4 ← RA ≡ STACK[SP-1]")) return -1;
 
   // allocate stack space for n_locals
   if (snprintf(address, sizeof(address), "%u", n_params + 2)
@@ -486,7 +486,7 @@ int gen_method_exit(const char *method_name, unsigned int n_params) {
   if (gen_push_reg('A')) return -1;
 
   // return to RA
-  if (emit_inst(NULL, "JMP", "0,1", "jump to RA")) return -1;
+  if (emit_inst(NULL, "JMP", "0,4", "jump to RA")) return -1;
 
   return 0;
 }
