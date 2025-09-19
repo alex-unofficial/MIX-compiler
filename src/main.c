@@ -59,21 +59,6 @@ int main(int argc, char ** argv) {
   if (DEBUG) ht_print(function_table);
   if (DEBUG) printf("\n");
 
-  if (DEBUG) printf("\n");
-  if (DEBUG) gen_push_var("x", 1);
-  if (DEBUG) gen_push_num(42);
-  if (DEBUG) gen_method_call("add", "F0002");
-  if (DEBUG) gen_pop_var("y", 2);
-  if (DEBUG) gen_method_entry("add", "F0002", 1);
-  if (DEBUG) gen_push_var("b", -3);
-  if (DEBUG) gen_push_var("a", -2);
-  if (DEBUG) gen_binop_add();
-  if (DEBUG) gen_pop_var("c", 1);
-  if (DEBUG) gen_push_var("c", 1);
-  if (DEBUG) gen_method_return();
-  if (DEBUG) gen_method_exit("add", 2);
-  if (DEBUG) printf("\n");
-
   ht_free(function_table);
   ast_free(ast_root);
 
