@@ -12,6 +12,9 @@
 #define LD(reg)  "LD"  STR(reg)
 #define ST(reg)  "ST"  STR(reg)
 
+/* program skeleton */
+int gen_program_prologue(const char *entry_label, unsigned int origin);
+int gen_program_epilogue(const char *entry_label);
 
 /* subroutine opetations */
 int gen_method_entry(const char *method_name, const char *label, unsigned int n_locals);

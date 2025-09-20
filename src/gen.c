@@ -475,7 +475,7 @@ int gen_method_exit(const char *method_name, unsigned int n_params) {
       >= (int)sizeof(address)) return -1;
   if (emit_inst(NULL, "LD4", address, "rI4 ← RA ≡ STACK[SP-1]")) return -1;
 
-  // allocate stack space for n_locals
+  // deallocate stack space for n_params
   if (snprintf(address, sizeof(address), "%u", n_params + 2)
       >= (int)sizeof(address)) return -1;
   if (snprintf(comment, sizeof(comment), "SP ← SP - %u", n_params + 2)
@@ -509,3 +509,37 @@ int gen_method_call(const char *method_name, const char *label) {
   return 0;
 }
 
+int gen_program_prologue(const char *entry_label, const char *main_label, unsigned int origin) {
+  char address[32];
+  char comment[64];
+
+  if (snprintf(address, sizeof(address), "%d", origin)
+      >= (int)sizeof(address)) return -1;
+
+  emit_comment("Constants and memory locations");
+  if (emit_inst("STACK", "EQU", address)) return -1;
+
+  emit_comment("Program entry, initializes SP, FP and jumps to main");
+
+  // set origin address
+  if (emit_inst(NULL, "ORIG", address, NULL)) return -1;
+
+  // initialize SP and FP
+  if (emit_inst(entry_label, ENT(REG_FP), "-STACK", "FP ← 0")) return -1;
+  if (emit_inst(NULL,        ENT(REG_SP), "-STACK", "SP ← 0")) return -1;
+
+  // jump to main
+  if (snprintf(comment, sizeof(comment), "jump to main ≡ %s", main_label)
+      >= (int)sizeof(comment)) return -1;
+  if (emit_inst(NULL, "JMP", main_label, comment)) return -1;
+
+  // halt execution
+  if (emit_inst(NULL, "HLT", NULL)) return -1;
+
+  return 0;
+}
+
+int gen_program_epilogue(const char *entry_label) {
+  emit_comment("Program end, begin execution at %s", entry_label);
+  return emit_inst(NULL, "END", entry_label, NULL);
+}
