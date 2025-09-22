@@ -205,6 +205,7 @@ void ast_free(ASTNode *n) {
 
       case N_IF:
         ast_free(n->branch.else_branch);
+        /* fallthrough */
       case N_WHILE:
         ast_free(n->branch.cond);
         ast_free(n->branch.then_branch);

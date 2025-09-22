@@ -8,12 +8,13 @@
 #define REG_FP 5
 
 #define STR(x) #x
+#define XSTR(x) STR(x)
 #define CHAR(x) ('0' + (x))
-#define INC(reg) "INC" STR(reg)
-#define DEC(reg) "DEC" STR(reg)
-#define ENT(reg) "ENT" STR(reg)
-#define LD(reg)  "LD"  STR(reg)
-#define ST(reg)  "ST"  STR(reg)
+#define INC(reg) "INC" XSTR(reg)
+#define DEC(reg) "DEC" XSTR(reg)
+#define ENT(reg) "ENT" XSTR(reg)
+#define LD(reg)  "LD"  XSTR(reg)
+#define ST(reg)  "ST"  XSTR(reg)
 
 /* generate assembly from AST */
 int gen_mixal_from_ast(const ASTNode *root, const HashTable *gt);
@@ -22,7 +23,7 @@ int gen_mixal_from_ast(const ASTNode *root, const HashTable *gt);
 int gen_program_prologue(const char *entry_label, const char *main_label, unsigned int origin);
 int gen_program_epilogue(const char *entry_label);
 
-/* subroutine opetations */
+/* subroutine operations */
 int gen_method_entry(const char *method_name, const char *label, unsigned int n_locals);
 int gen_method_exit(const char *method_name, unsigned int n_params);
 int gen_method_return();
@@ -34,7 +35,7 @@ int gen_branch_entry(const char *l_break);          // set jump on condition fai
 int gen_branch_jmp(const char *l_branch);           // set jump to branch continue
 int gen_branch_break(const char *l_done);           // set jump to loop break
 
-/* stack insertion, deletion opetations */
+/* stack insertion, deletion operations */
 int gen_push_var(const char *var_name, int offset); // push variable to stack
 int gen_pop_var(const char *var_name, int offset);  // pop variable from stack
 int gen_push_num(int value);                        // push number to stack

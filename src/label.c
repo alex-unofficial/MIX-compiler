@@ -8,14 +8,20 @@
 static char *label_fmt(const char *prefix, unsigned int index) {
 
   const size_t buf_len = LABEL_LEN + 1;
-  const unsigned int hex_digits = LABEL_LEN - strlen(prefix);
+  const int hex_digits = LABEL_LEN - strlen(prefix);
+  if (hex_digits <= 0) return NULL;
 
   char *l = malloc(buf_len);
   if (!l) return NULL;
 
   uint64_t mask = (hex_digits >= 16)? UINT64_MAX : ((uint64_t) 1 << (4 * hex_digits)) - 1;
 
-  snprintf(l, buf_len, "%s%0*llX", prefix, (int)hex_digits, (unsigned long long)(index & mask));
+  if(snprintf(l, buf_len, "%s%0*llX", prefix, 
+        (int)hex_digits, (unsigned long long)(index & mask)) 
+     >= (int)buf_len) {
+    free(l);
+    return NULL;
+  }
 
   return l;
 }

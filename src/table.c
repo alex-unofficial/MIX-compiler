@@ -78,7 +78,7 @@ void ht_print(const HashTable *ht) {
     while (e != NULL) {
       switch (e->payload.kind) {
         case PAYLOAD_METHOD:
-          printf("METHOD (%s): return_type=%s, label='%s', n_params=%d, n_locals=%d\n", 
+          printf("METHOD (%s): return_type=%s, label='%s', n_params=%u, n_locals=%u\n", 
               e->key, data_type_str[e->payload.method.return_type], e->payload.method.label,
               e->payload.method.param_count, e->payload.method.local_count);
           ht_print(e->payload.method.symbols);

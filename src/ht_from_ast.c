@@ -220,7 +220,7 @@ static unsigned int _ht_from_ast_node(const ASTNode *n, HashTable *gt, struct Sy
           semantic_errors += 1;
           const char *temp = (arg_count < param_count)? "few" : "many";
           fprintf(stderr, "In method '%s':\n", ctxt->scope);
-          fprintf(stderr, "error: too %s argumenst to method '%s' at line %d, column %d;",
+          fprintf(stderr, "error: too %s arguments to method '%s' at line %d, column %d;",
               temp, n->call.fname, n->loc.first_line, n->loc.first_column);
           fprintf(stderr, " expected %u, have %u\n",
               e->payload.method.param_count, arg_count);

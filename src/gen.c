@@ -415,6 +415,8 @@ int gen_branch_jmp(const char *l_continue) {
   if (snprintf(comment, sizeof(comment), "jump to %s", l_continue)
       >= (int)sizeof(comment)) return -1;
   if (emit_inst(NULL, "JMP", l_continue, comment)) return -1;
+
+  return 0;
 }
 
 int gen_branch_break(const char *l_done) {
@@ -554,7 +556,7 @@ int gen_program_prologue(const char *entry_label, const char *main_label, unsign
 
   // print to TTY
   if (emit_inst(NULL, "OUT", "BUFFER(TTY)", "print to TTY")) return -1;
-  if (emit_inst(NULL, "JBUS", "*(TTY)", "wait until printed"));
+  if (emit_inst(NULL, "JBUS", "*(TTY)", "wait until printed")) return -1;
 
   emit_comment("Halt execution");
 
@@ -566,22 +568,24 @@ int gen_program_prologue(const char *entry_label, const char *main_label, unsign
 
 int gen_program_epilogue(const char *entry_label) {
   emit_comment("Initial contents of buffer");
-  if (emit_inst(NULL, "ORIG", "BUFFER", NULL));
-  if (emit_inst(NULL, "ALF", "\"RETUR\"", NULL));
-  if (emit_inst(NULL, "ALF", "\"N VAL\"", NULL));
-  if (emit_inst(NULL, "ALF", "\"UE OF\"", NULL));
-  if (emit_inst(NULL, "ALF", "\" MAIN\"", NULL));
-  if (emit_inst(NULL, "ALF", "\" FUNC\"", NULL));
-  if (emit_inst(NULL, "ALF", "\"TION:\"", NULL));
-  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
-  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
-  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
-  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
-  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
-  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
-  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
-  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
+  if (emit_inst(NULL, "ORIG", "BUFFER", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"RETUR\"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"N VAL\"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"UE OF\"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\" MAIN\"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\" FUNC\"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"TION:\"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL)) return -1;
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL)) return -1;
 
   emit_comment("Program end, begin execution at %s", entry_label);
-  return emit_inst(NULL, "END", entry_label, NULL);
+  if (emit_inst(NULL, "END", entry_label, NULL)) return -1;
+
+  return 0;
 }
