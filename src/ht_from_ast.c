@@ -9,7 +9,7 @@ unsigned int method_index = 1;
 struct SymbolTableContext {
   HashTable *lt;
   char *scope;
-  char in_loop;
+  unsigned int loop_depth;
   unsigned int param_count;
   unsigned int local_count;
   enum DataType decl_type;
@@ -63,7 +63,7 @@ static unsigned int _ht_from_ast_node(const ASTNode *n, HashTable *gt, struct Sy
           .scope = n->method.name,
           .param_count = 0,
           .local_count = 0,
-          .in_loop = 0,
+          .loop_depth = 0,
         };
 
         semantic_errors += _ht_from_ast_node_list(n->method.params, gt, &mctxt);
@@ -178,9 +178,9 @@ static unsigned int _ht_from_ast_node(const ASTNode *n, HashTable *gt, struct Sy
     case N_WHILE:
       semantic_errors += _ht_from_ast_node(n->branch.cond, gt, ctxt);
 
-      ctxt->in_loop = 1;
+      ctxt->loop_depth += 1;
       semantic_errors += _ht_from_ast_node(n->branch.then_branch, gt, ctxt);
-      ctxt->in_loop = 0;
+      ctxt->loop_depth -= 1;
 
       return semantic_errors;
 
@@ -188,7 +188,7 @@ static unsigned int _ht_from_ast_node(const ASTNode *n, HashTable *gt, struct Sy
       return _ht_from_ast_node(n->ret.expr, gt, ctxt);
 
     case N_BREAK:
-      if (!ctxt->in_loop) {
+      if (! (ctxt->loop_depth > 0)) {
         semantic_errors += 1;
         fprintf(stderr, "In method '%s':\n", ctxt->scope);
         fprintf(stderr, "error: break statement at line %d not in loop context\n", 

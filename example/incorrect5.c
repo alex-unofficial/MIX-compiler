@@ -2,6 +2,11 @@ int method1(int a)
 {
   int b;
   b = a + 10;
+  if (b) {
+    break;
+  }
+  else;
+
   return b;
 }
 
