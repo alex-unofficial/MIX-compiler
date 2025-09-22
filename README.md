@@ -51,7 +51,7 @@ mixasm foo.mixal
 mixvm -r foo.mix
 ```
 
-## Licence
+## License
 Copyright (C) 2025 Alexandros Athanasiadis
 
 This program is free software: you can redistribute it and/or modify
