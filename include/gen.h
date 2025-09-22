@@ -1,6 +1,9 @@
 #ifndef GEN_H
 #define GEN_H
 
+#include "ast.h"
+#include "table.h"
+
 #define REG_SP 6
 #define REG_FP 5
 
@@ -12,8 +15,11 @@
 #define LD(reg)  "LD"  STR(reg)
 #define ST(reg)  "ST"  STR(reg)
 
+/* generate assembly from AST */
+int gen_mixal_from_ast(const ASTNode *root, const HashTable *gt);
+
 /* program skeleton */
-int gen_program_prologue(const char *entry_label, unsigned int origin);
+int gen_program_prologue(const char *entry_label, const char *main_label, unsigned int origin);
 int gen_program_epilogue(const char *entry_label);
 
 /* subroutine opetations */
@@ -26,6 +32,7 @@ int gen_method_call(const char *method_name, const char *label);
 int gen_branch_label(const char *l_label);          // initialize branch label
 int gen_branch_entry(const char *l_break);          // set jump on condition fail
 int gen_branch_jmp(const char *l_branch);           // set jump to branch continue
+int gen_branch_break(const char *l_done);           // set jump to loop break
 
 /* stack insertion, deletion opetations */
 int gen_push_var(const char *var_name, int offset); // push variable to stack

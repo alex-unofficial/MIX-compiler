@@ -9,13 +9,16 @@ unsigned int method_index = 1;
 struct SymbolTableContext {
   HashTable *lt;
   char *scope;
+  char in_loop;
   unsigned int param_count;
   unsigned int local_count;
   enum DataType decl_type;
 };
 
-static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolTableContext *ctxt);
-static unsigned int _ht_from_ast_list(const ASTList *l, HashTable *gt, struct SymbolTableContext *ctxt);
+static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt,
+                                 struct SymbolTableContext *ctxt);
+static unsigned int _ht_from_ast_list(const ASTList *l, HashTable *gt, 
+                                      struct SymbolTableContext *ctxt);
 
 unsigned int ht_from_ast(const ASTNode *n, HashTable **gt) {
   unsigned int semantic_errors = 0;
@@ -59,7 +62,8 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
           .lt = st,
           .scope = n->method.name,
           .param_count = 0,
-          .local_count = 0
+          .local_count = 0,
+          .in_loop = 0,
         };
 
         semantic_errors += _ht_from_ast_list(n->method.params, gt, &mctxt);
@@ -173,14 +177,25 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
 
     case N_WHILE:
       semantic_errors += _ht_from_ast(n->branch.cond, gt, ctxt);
+
+      ctxt->in_loop = 1;
       semantic_errors += _ht_from_ast(n->branch.then_branch, gt, ctxt);
+      ctxt->in_loop = 0;
+
       return semantic_errors;
 
     case N_RETURN:
       return _ht_from_ast(n->ret.expr, gt, ctxt);
 
     case N_BREAK:
-      return 0;
+      if (!ctxt->in_loop) {
+        semantic_errors += 1;
+        fprintf(stderr, "In method '%s':\n", ctxt->scope);
+        fprintf(stderr, "error: break statement at line %d not in loop context\n", 
+            n->loc.first_line);
+        fprintf(stderr, "\n");
+      }
+      return semantic_errors;
 
     case N_BINOP:
       semantic_errors += _ht_from_ast(n->binop.lhs, gt, ctxt);

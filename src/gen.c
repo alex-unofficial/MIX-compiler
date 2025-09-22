@@ -395,6 +395,8 @@ int gen_branch_label(const char *label) {
 int gen_branch_entry(const char *l_break) {
   char comment[64];
 
+  emit_comment("evaluate branch condition");
+
   // pop rA from stack
   if (gen_pop_reg('A')) return -1;
 
@@ -413,6 +415,11 @@ int gen_branch_jmp(const char *l_continue) {
   if (snprintf(comment, sizeof(comment), "jump to %s", l_continue)
       >= (int)sizeof(comment)) return -1;
   if (emit_inst(NULL, "JMP", l_continue, comment)) return -1;
+}
+
+int gen_branch_break(const char *l_done) {
+  emit_comment("break from loop (jump to done label)");
+  return gen_branch_jmp(l_done);
 }
 
 int gen_method_entry(const char *method_name, const char *label, unsigned int n_locals) {
@@ -517,7 +524,7 @@ int gen_program_prologue(const char *entry_label, const char *main_label, unsign
       >= (int)sizeof(address)) return -1;
 
   emit_comment("Constants and memory locations");
-  if (emit_inst("STACK", "EQU", address)) return -1;
+  if (emit_inst("STACK", "EQU", address, NULL)) return -1;
 
   emit_comment("Program entry, initializes SP, FP and jumps to main");
 
@@ -534,7 +541,7 @@ int gen_program_prologue(const char *entry_label, const char *main_label, unsign
   if (emit_inst(NULL, "JMP", main_label, comment)) return -1;
 
   // halt execution
-  if (emit_inst(NULL, "HLT", NULL)) return -1;
+  if (emit_inst(NULL, "HLT", NULL, NULL)) return -1;
 
   return 0;
 }

@@ -59,6 +59,8 @@ int main(int argc, char ** argv) {
   if (DEBUG) ht_print(function_table);
   if (DEBUG) printf("\n");
 
+  exit_if (gen_mixal_from_ast(ast_root, function_table));
+
   ht_free(function_table);
   ast_free(ast_root);
 

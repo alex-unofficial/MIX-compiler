@@ -1,0 +1,121 @@
+* Constants and memory locations
+STACK      EQU  3000                  
+* Program entry, initializes SP, FP and jumps to main
+           ORIG 3000                  
+START      ENT5 -STACK                 ; FP ← 0
+           ENT6 -STACK                 ; SP ← 0
+           JMP  FUNC000002             ; jump to main ≡ FUNC000002
+           HLT                        
+* Subroutine method1 entry (store RA & FP, FP ← SP, alloc n_locals)
+FUNC000001 STJ  STACK+1,6              ; STACK[SP+1] ← RA ≡ rJ
+           ST5  STACK+2,6(0:2)         ; STACK[SP+2] ← FP
+           ENT5 2,6                    ; FP ← SP + 2
+           INC6 3                      ; SP ← SP + 3
+* Push 0 to stack
+           LDA  =0=                    ; rA ← 0
+           INC6 1                      ; SP ← SP + 1
+           STA  STACK,6                ; STACK[SP] ← rA
+* Pop b from stack
+           LDA  STACK,6                ; rA ← STACK[SP]
+           DEC6 1                      ; SP ← SP - 1
+           STA  STACK+1,5              ; STACK[FP+1] ≡ b ← rA
+LOOP000001 NOP                        
+* Push 0 to stack
+           LDA  =0=                    ; rA ← 0
+           INC6 1                      ; SP ← SP + 1
+           STA  STACK,6                ; STACK[SP] ← rA
+* Push a to stack
+           LDA  STACK-2,5              ; rA ← a ≡ STACK[FP-2]
+           INC6 1                      ; SP ← SP + 1
+           STA  STACK,6                ; STACK[SP] ← rA
+* Comparison operation (>) on stack (pop A, pop B, push A > B)
+           LDA  STACK,6                ; rA ← STACK[SP]
+           DEC6 1                      ; SP ← SP - 1
+           CMPA STACK,6                ; CI ← rA ? STACK[SP]
+           ENTX 1                      ; rX ← 1
+           JG   1F                     ; lhs > rhs? continue
+           ENTX 0                      ; else, overwrite rX ← 0
+1H         STX  STACK,6                ; STACK[SP] ← rX
+* evaluate branch condition
+           LDA  STACK,6                ; rA ← STACK[SP]
+           DEC6 1                      ; SP ← SP - 1
+           JAZ  DONE000001             ; cond = false? jump to DONE000001
+* Push 10 to stack
+           LDA  =10=                   ; rA ← 10
+           INC6 1                      ; SP ← SP + 1
+           STA  STACK,6                ; STACK[SP] ← rA
+* Push a to stack
+           LDA  STACK-2,5              ; rA ← a ≡ STACK[FP-2]
+           INC6 1                      ; SP ← SP + 1
+           STA  STACK,6                ; STACK[SP] ← rA
+* Addition operation on stack (pop A, pop B, push A + B)
+           LDA  STACK,6                ; rA ← STACK[SP]
+           DEC6 1                      ; SP ← SP - 1
+           ADD  STACK,6                ; rA ← rA + STACK[SP]
+           STA  STACK,6                ; STACK[SP] ← rA
+* Pop b from stack
+           LDA  STACK,6                ; rA ← STACK[SP]
+           DEC6 1                      ; SP ← SP - 1
+           STA  STACK+1,5              ; STACK[FP+1] ≡ b ← rA
+* Push 1 to stack
+           LDA  =1=                    ; rA ← 1
+           INC6 1                      ; SP ← SP + 1
+           STA  STACK,6                ; STACK[SP] ← rA
+* Push a to stack
+           LDA  STACK-2,5              ; rA ← a ≡ STACK[FP-2]
+           INC6 1                      ; SP ← SP + 1
+           STA  STACK,6                ; STACK[SP] ← rA
+* Subtraction operation on stack (pop A, pop B, push A - B)
+           LDA  STACK,6                ; rA ← STACK[SP]
+           DEC6 1                      ; SP ← SP - 1
+           SUB  STACK,6                ; rA ← rA - STACK[SP]
+           STA  STACK,6                ; STACK[SP] ← rA
+* Pop a from stack
+           LDA  STACK,6                ; rA ← STACK[SP]
+           DEC6 1                      ; SP ← SP - 1
+           STA  STACK-2,5              ; STACK[FP-2] ≡ a ← rA
+* break from loop (jump to done label)
+           JMP  DONE000001             ; jump to DONE000001
+           JMP  LOOP000001             ; jump to LOOP000001
+DONE000001 NOP                        
+* Push b to stack
+           LDA  STACK+1,5              ; rA ← b ≡ STACK[FP+1]
+           INC6 1                      ; SP ← SP + 1
+           STA  STACK,6                ; STACK[SP] ← rA
+* Return from subroutine (return value is top of the stack)
+           JMP  9F                     ; jump to method exit
+* Subroutine method1 exit (restore FP & SP, dealloc params, push result, jump to RA)
+9H         LDA  STACK,6                ; rA ← result ≡ STACK[SP]
+           DEC6 1                      ; SP ← SP - 1
+           ENT6 0,5                    ; SP ← FP
+           LD5  STACK,5(0:2)           ; FP ← old FP ≡ STACK[SP]
+           LD4  STACK-1,6(0:2)         ; rI4 ← RA ≡ STACK[SP-1]
+           DEC6 3                      ; SP ← SP - 3
+           INC6 1                      ; SP ← SP + 1
+           STA  STACK,6                ; STACK[SP] ← rA
+           JMP  0,4                    ; jump to RA
+* Subroutine main entry (store RA & FP, FP ← SP, alloc n_locals)
+FUNC000002 STJ  STACK+1,6              ; STACK[SP+1] ← RA ≡ rJ
+           ST5  STACK+2,6(0:2)         ; STACK[SP+2] ← FP
+           ENT5 2,6                    ; FP ← SP + 2
+           INC6 2                      ; SP ← SP + 2
+* Push 5 to stack
+           LDA  =5=                    ; rA ← 5
+           INC6 1                      ; SP ← SP + 1
+           STA  STACK,6                ; STACK[SP] ← rA
+* Call method method1 (pop params, push result)
+           JMP  FUNC000001             ; jump to FUNC000001 ≡ method1
+* Return from subroutine (return value is top of the stack)
+           JMP  9F                     ; jump to method exit
+* Subroutine main exit (restore FP & SP, dealloc params, push result, jump to RA)
+9H         LDA  STACK,6                ; rA ← result ≡ STACK[SP]
+           DEC6 1                      ; SP ← SP - 1
+           ENT6 0,5                    ; SP ← FP
+           LD5  STACK,5(0:2)           ; FP ← old FP ≡ STACK[SP]
+           LD4  STACK-1,6(0:2)         ; rI4 ← RA ≡ STACK[SP-1]
+           DEC6 2                      ; SP ← SP - 2
+           INC6 1                      ; SP ← SP + 1
+           STA  STACK,6                ; STACK[SP] ← rA
+           JMP  0,4                    ; jump to RA
+* Program end, begin execution at START
+           END  START                 

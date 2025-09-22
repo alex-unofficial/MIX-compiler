@@ -17,6 +17,7 @@ SRCS = $(BISON_C) $(FLEX_C) \
 			 $(SRC_DIR)/ast.c $(SRC_DIR)/table.c \
 			 $(SRC_DIR)/label.c $(SRC_DIR)/ht_from_ast.c \
 			 $(SRC_DIR)/emit.c $(SRC_DIR)/gen.c\
+			 $(SRC_DIR)/gen_mixal_from_ast.c \
 			 $(SRC_DIR)/main.c
 
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)

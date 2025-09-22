@@ -52,7 +52,7 @@ int emit_inst(const char *label,
   fprintf(mixout, " %-*s", COL_OPCODE, opcode);
   fprintf(mixout, " %-*s", COL_ADDR, address ? address : "");
   if (comment && comment[0]) {
-    fprintf(mixout, " : %s", comment);
+    fprintf(mixout, " ; %s", comment);
   }
   fputc('\n', mixout);
 

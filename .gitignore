@@ -3,5 +3,6 @@
 *.yy.*
 build/*
 .cache/*
+*.mix
 compile_commands.json
 compiler
