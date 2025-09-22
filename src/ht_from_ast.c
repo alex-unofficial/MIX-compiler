@@ -15,16 +15,16 @@ struct SymbolTableContext {
   enum DataType decl_type;
 };
 
-static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt,
+static unsigned int _ht_from_ast_node(const ASTNode *n, HashTable *gt,
                                  struct SymbolTableContext *ctxt);
-static unsigned int _ht_from_ast_list(const ASTList *l, HashTable *gt, 
+static unsigned int _ht_from_ast_node_list(const ASTList *l, HashTable *gt, 
                                       struct SymbolTableContext *ctxt);
 
 unsigned int ht_from_ast(const ASTNode *n, HashTable **gt) {
   unsigned int semantic_errors = 0;
   *gt = ht_new(TABLE_SIZE);
 
-  semantic_errors += _ht_from_ast(n, *gt, NULL);
+  semantic_errors += _ht_from_ast_node(n, *gt, NULL);
 
   TableEntry *e = ht_find_entry(*gt, "main");
   if (e == NULL) {
@@ -36,7 +36,7 @@ unsigned int ht_from_ast(const ASTNode *n, HashTable **gt) {
   return semantic_errors;
 }
 
-static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolTableContext *ctxt) {
+static unsigned int _ht_from_ast_node(const ASTNode *n, HashTable *gt, struct SymbolTableContext *ctxt) {
   if (n == NULL) return 0;
 
   TableEntry *e = NULL;
@@ -44,7 +44,7 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
 
   switch (n->kind) {
     case N_PROGRAM:
-      return _ht_from_ast_list(n->prog.methods, gt, ctxt);
+      return _ht_from_ast_node_list(n->prog.methods, gt, ctxt);
 
     case N_METHOD:
       e = ht_find_entry(gt, n->method.name);
@@ -66,8 +66,8 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
           .in_loop = 0,
         };
 
-        semantic_errors += _ht_from_ast_list(n->method.params, gt, &mctxt);
-        semantic_errors += _ht_from_ast(n->method.body, gt, &mctxt);
+        semantic_errors += _ht_from_ast_node_list(n->method.params, gt, &mctxt);
+        semantic_errors += _ht_from_ast_node(n->method.body, gt, &mctxt);
 
         Payload method_payload = {
           .kind = PAYLOAD_METHOD,
@@ -115,17 +115,17 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
       }
 
     case N_BODY:
-      semantic_errors += _ht_from_ast_list(n->body.decls, gt, ctxt);
-      semantic_errors += _ht_from_ast_list(n->body.stmts, gt, ctxt);
+      semantic_errors += _ht_from_ast_node_list(n->body.decls, gt, ctxt);
+      semantic_errors += _ht_from_ast_node_list(n->body.stmts, gt, ctxt);
       return semantic_errors;
 
     case N_DECL:
       ctxt->decl_type = n->decl.type;
-      return _ht_from_ast_list(n->decl.vars, gt, ctxt);
+      return _ht_from_ast_node_list(n->decl.vars, gt, ctxt);
 
     case N_VAR:
       ctxt->local_count += 1;
-      semantic_errors += _ht_from_ast(n->var.expr, gt, ctxt);
+      semantic_errors += _ht_from_ast_node(n->var.expr, gt, ctxt);
 
       e = ht_find_entry(ctxt->lt, n->var.name);
       if (e != NULL) {
@@ -154,7 +154,7 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
       return semantic_errors;
 
     case N_BLOCK:
-      return _ht_from_ast_list(n->block.stmts, gt, ctxt);
+      return _ht_from_ast_node_list(n->block.stmts, gt, ctxt);
 
     case N_ASSIGN:
       e = ht_find_entry(ctxt->lt, n->assign.location);
@@ -165,27 +165,27 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
             n->assign.location, n->loc.first_line, n->loc.first_column);
         fprintf(stderr, "\n");
       }
-      semantic_errors += _ht_from_ast(n->assign.rhs, gt, ctxt);
+      semantic_errors += _ht_from_ast_node(n->assign.rhs, gt, ctxt);
 
       return semantic_errors;
 
     case N_IF:
-      semantic_errors += _ht_from_ast(n->branch.cond, gt, ctxt);
-      semantic_errors += _ht_from_ast(n->branch.then_branch, gt, ctxt);
-      semantic_errors += _ht_from_ast(n->branch.else_branch, gt, ctxt);
+      semantic_errors += _ht_from_ast_node(n->branch.cond, gt, ctxt);
+      semantic_errors += _ht_from_ast_node(n->branch.then_branch, gt, ctxt);
+      semantic_errors += _ht_from_ast_node(n->branch.else_branch, gt, ctxt);
       return semantic_errors;
 
     case N_WHILE:
-      semantic_errors += _ht_from_ast(n->branch.cond, gt, ctxt);
+      semantic_errors += _ht_from_ast_node(n->branch.cond, gt, ctxt);
 
       ctxt->in_loop = 1;
-      semantic_errors += _ht_from_ast(n->branch.then_branch, gt, ctxt);
+      semantic_errors += _ht_from_ast_node(n->branch.then_branch, gt, ctxt);
       ctxt->in_loop = 0;
 
       return semantic_errors;
 
     case N_RETURN:
-      return _ht_from_ast(n->ret.expr, gt, ctxt);
+      return _ht_from_ast_node(n->ret.expr, gt, ctxt);
 
     case N_BREAK:
       if (!ctxt->in_loop) {
@@ -198,12 +198,12 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
       return semantic_errors;
 
     case N_BINOP:
-      semantic_errors += _ht_from_ast(n->binop.lhs, gt, ctxt);
-      semantic_errors += _ht_from_ast(n->binop.rhs, gt, ctxt);
+      semantic_errors += _ht_from_ast_node(n->binop.lhs, gt, ctxt);
+      semantic_errors += _ht_from_ast_node(n->binop.rhs, gt, ctxt);
       return semantic_errors;
 
     case N_UNARY:
-      return _ht_from_ast(n->unary.expr, gt, ctxt);
+      return _ht_from_ast_node(n->unary.expr, gt, ctxt);
 
     case N_CALL:
       e = ht_find_entry(gt, n->call.fname);
@@ -228,7 +228,7 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
         }
       }
 
-      semantic_errors += _ht_from_ast_list(n->call.args, gt, ctxt);
+      semantic_errors += _ht_from_ast_node_list(n->call.args, gt, ctxt);
 
       return semantic_errors;
 
@@ -251,11 +251,11 @@ static unsigned int _ht_from_ast(const ASTNode *n, HashTable *gt, struct SymbolT
   }
 }
 
-static unsigned int _ht_from_ast_list(const ASTList *l, HashTable *gt, struct SymbolTableContext *ctxt) {
+static unsigned int _ht_from_ast_node_list(const ASTList *l, HashTable *gt, struct SymbolTableContext *ctxt) {
   const ASTList *i = l;
   unsigned int semantic_errors = 0;
   while (i != NULL) {
-    semantic_errors += _ht_from_ast(i->node, gt, ctxt);
+    semantic_errors += _ht_from_ast_node(i->node, gt, ctxt);
     i = i->list;
   }
 
