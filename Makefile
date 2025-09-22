@@ -23,7 +23,7 @@ SRCS = $(BISON_C) $(FLEX_C) \
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 EXEC = compiler
 
-DEBUG_FLAG = true
+DEBUG_FLAG = false
 
 CFLAGS = -I$(INC_DIR) -DDEBUG=$(DEBUG_FLAG) -ggdb
 LDFLAGS = -lfl
