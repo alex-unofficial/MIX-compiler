@@ -524,6 +524,8 @@ int gen_program_prologue(const char *entry_label, const char *main_label, unsign
       >= (int)sizeof(address)) return -1;
 
   emit_comment("Constants and memory locations");
+  if (emit_inst("TTY", "EQU", "19", NULL)) return -1;
+  if (emit_inst("BUFFER", "EQU", "3800", NULL)) return -1;
   if (emit_inst("STACK", "EQU", address, NULL)) return -1;
 
   emit_comment("Program entry, initializes SP, FP and jumps to main");
@@ -540,6 +542,22 @@ int gen_program_prologue(const char *entry_label, const char *main_label, unsign
       >= (int)sizeof(comment)) return -1;
   if (emit_inst(NULL, "JMP", main_label, comment)) return -1;
 
+  emit_comment("Pop result from stack and print");
+
+  // pop return value 
+  if (gen_pop_reg('A')) return -1;
+
+  // convert to char and store in buffer
+  if (emit_inst(NULL, "CHAR", NULL, NULL)) return -1;
+  if (emit_inst(NULL, "STA", "BUFFER+7", "high byte of result")) return -1;
+  if (emit_inst(NULL, "STX", "BUFFER+8", "low byte of result")) return -1;
+
+  // print to TTY
+  if (emit_inst(NULL, "OUT", "BUFFER(TTY)", "print to TTY")) return -1;
+  if (emit_inst(NULL, "JBUS", "*(TTY)", "wait until printed"));
+
+  emit_comment("Halt execution");
+
   // halt execution
   if (emit_inst(NULL, "HLT", NULL, NULL)) return -1;
 
@@ -547,6 +565,23 @@ int gen_program_prologue(const char *entry_label, const char *main_label, unsign
 }
 
 int gen_program_epilogue(const char *entry_label) {
+  emit_comment("Initial contents of buffer");
+  if (emit_inst(NULL, "ORIG", "BUFFER", NULL));
+  if (emit_inst(NULL, "ALF", "\"RETUR\"", NULL));
+  if (emit_inst(NULL, "ALF", "\"N VAL\"", NULL));
+  if (emit_inst(NULL, "ALF", "\"UE OF\"", NULL));
+  if (emit_inst(NULL, "ALF", "\" MAIN\"", NULL));
+  if (emit_inst(NULL, "ALF", "\" FUNC\"", NULL));
+  if (emit_inst(NULL, "ALF", "\"TION:\"", NULL));
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
+  if (emit_inst(NULL, "ALF", "\"     \"", NULL));
+
   emit_comment("Program end, begin execution at %s", entry_label);
   return emit_inst(NULL, "END", entry_label, NULL);
 }

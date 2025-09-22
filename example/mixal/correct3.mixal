@@ -1,10 +1,21 @@
 * Constants and memory locations
+TTY        EQU  19                    
+BUFFER     EQU  3800                  
 STACK      EQU  3000                  
 * Program entry, initializes SP, FP and jumps to main
            ORIG 3000                  
 START      ENT5 -STACK                 ; FP ← 0
            ENT6 -STACK                 ; SP ← 0
            JMP  FUNC000003             ; jump to main ≡ FUNC000003
+* Pop result from stack and print
+           LDA  STACK,6                ; rA ← STACK[SP]
+           DEC6 1                      ; SP ← SP - 1
+           CHAR                       
+           STA  BUFFER+7               ; high byte of result
+           STX  BUFFER+8               ; low byte of result
+           OUT  BUFFER(TTY)            ; print to TTY
+           JBUS *(TTY)                 ; wait until printed
+* Halt execution
            HLT                        
 * Subroutine method1 entry (store RA & FP, FP ← SP, alloc n_locals)
 FUNC000001 STJ  STACK+1,6              ; STACK[SP+1] ← RA ≡ rJ
@@ -119,5 +130,21 @@ FUNC000003 STJ  STACK+1,6              ; STACK[SP+1] ← RA ≡ rJ
            INC6 1                      ; SP ← SP + 1
            STA  STACK,6                ; STACK[SP] ← rA
            JMP  0,4                    ; jump to RA
+* Initial contents of buffer
+           ORIG BUFFER                
+           ALF  "RETUR"               
+           ALF  "N VAL"               
+           ALF  "UE OF"               
+           ALF  " MAIN"               
+           ALF  " FUNC"               
+           ALF  "TION:"               
+           ALF  "     "               
+           ALF  "     "               
+           ALF  "     "               
+           ALF  "     "               
+           ALF  "     "               
+           ALF  "     "               
+           ALF  "     "               
+           ALF  "     "               
 * Program end, begin execution at START
            END  START                 
