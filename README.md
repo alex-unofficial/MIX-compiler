@@ -6,7 +6,7 @@ Donald Knuth in [The Art of Computer Programming](https://www-cs-faculty.stanfor
 The compiler accepts a *tiny* subset of C, that supports functions,
 branching, while loops, arithmetic expressions, comparison operators, etc.
 There is no support for pointers or memory management, no other types
-beside int, no I/O support (except printing the return value of `main`),
+beside `int`, no I/O support (except printing the return value of `main`),
 no structs, ...
 
 You can find some examples of accepted and not accepted code snippets 
