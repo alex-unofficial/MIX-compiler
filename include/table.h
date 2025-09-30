@@ -62,7 +62,7 @@ struct HashTable {
 HashTable *ht_new(size_t table_size);
 TableEntry *ht_prepend_entry(const char *key, uint64_t hash, Payload payload, TableEntry *next);
 
-void ht_add_entry(HashTable *ht, const char *key, Payload payload);
+TableEntry *ht_add_entry(HashTable *ht, const char *key, Payload payload);
 TableEntry *ht_find_entry(const HashTable *ht, const char *key);
 
 unsigned int ht_from_ast(const ASTNode *node, HashTable **gt);

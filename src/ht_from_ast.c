@@ -56,6 +56,21 @@ static unsigned int _ht_from_ast_node(const ASTNode *n, HashTable *gt, struct Sy
         return 1;
 
       } else {
+
+        Payload method_payload = {
+          .kind = PAYLOAD_METHOD,
+          .loc = n->loc,
+          .method = {
+            .return_type = n->method.type,
+            .param_count = 0,
+            .local_count = 0,
+            .symbols = NULL,
+            .label = label_method(method_index++)
+          }
+        };
+
+        e = ht_add_entry(gt, n->method.name, method_payload);
+        
         HashTable *st = ht_new(TABLE_SIZE);
 
         struct SymbolTableContext mctxt = {
@@ -67,22 +82,13 @@ static unsigned int _ht_from_ast_node(const ASTNode *n, HashTable *gt, struct Sy
         };
 
         semantic_errors += _ht_from_ast_node_list(n->method.params, gt, &mctxt);
+        e->payload.method.param_count = mctxt.param_count;
+
         semantic_errors += _ht_from_ast_node(n->method.body, gt, &mctxt);
+        e->payload.method.local_count = mctxt.local_count;
 
-        Payload method_payload = {
-          .kind = PAYLOAD_METHOD,
-          .loc = n->loc,
-          .method = {
-            .return_type = n->method.type,
-            .param_count = mctxt.param_count,
-            .local_count = mctxt.local_count,
-            .symbols = st,
-            .label = label_method(method_index++)
-          }
-        };
+        e->payload.method.symbols = st;
 
-        ht_add_entry(gt, n->method.name, method_payload);
-        
         return semantic_errors;
       }
 
