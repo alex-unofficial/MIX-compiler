@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 
 #ifndef DEBUG
-#define DEBUG true
+#define DEBUG 1
 #endif
 
 // bison and flex input file.
@@ -45,19 +45,23 @@ int main(int argc, char ** argv) {
   ASTNode *ast_root = NULL;
   exit_if (yyparse(&ast_root));
 
-  if (DEBUG) printf("\n");
-  if (DEBUG) printf("SYNTAX TREE:\n");
-  if (DEBUG) printf("-----------\n");
-  if (DEBUG) ast_print(ast_root, 0);
-  if (DEBUG) printf("\n");
+#if DEBUG
+  printf("\n");
+  printf("SYNTAX TREE:\n");
+  printf("-----------\n");
+  ast_print(ast_root, 0);
+  printf("\n");
+#endif
 
   HashTable *function_table = NULL;
   exit_if (ht_from_ast(ast_root, &function_table));
 
-  if (DEBUG) printf("SYMBOL TABLE:\n");
-  if (DEBUG) printf("------------\n");
-  if (DEBUG) ht_print(function_table);
-  if (DEBUG) printf("\n");
+#if DEBUG
+  printf("SYMBOL TABLE:\n");
+  printf("------------\n");
+  ht_print(function_table);
+  printf("\n");
+#endif
 
   exit_if (gen_mixal_from_ast(ast_root, function_table));
 
