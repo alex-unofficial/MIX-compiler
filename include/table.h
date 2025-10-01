@@ -14,13 +14,10 @@
 typedef struct TableEntry TableEntry;
 typedef struct HashTable HashTable;
 
-enum PayloadKind {PAYLOAD_METHOD, PAYLOAD_SYMBOL};
+extern const char *sym_kind_str[];
 
+enum PayloadKind {PAYLOAD_METHOD, PAYLOAD_SYMBOL};
 enum SymKind {SYMBOL_PARAM, SYMBOL_LOCAL};
-static const char *sym_kind_str[] = {
-  [SYMBOL_PARAM] = "parameter",
-  [SYMBOL_LOCAL] = "variable"
-};
 
 typedef struct {
   enum PayloadKind kind;

@@ -2,6 +2,23 @@
 #include <stdio.h>
 #include <string.h>
 
+const char *op_kind_str[] = {
+  [OP_RELOP_LEQ] = "<=",
+  [OP_RELOP_LT]  = "<",
+  [OP_RELOP_GT]  = ">",
+  [OP_RELOP_GEQ] = ">=",
+  [OP_RELOP_EQ]  = "==",
+  [OP_RELOP_NEQ] = "!=",
+  [OP_ADDOP_ADD] = "+",
+  [OP_ADDOP_SUB] = "-",
+  [OP_MULOP_MUL] = "*",
+  [OP_MULOP_DIV] = "/"
+}; 
+
+const char *data_type_str[] = {
+  [TYPE_INT] = "int"
+};
+
 ASTNode *ast_new_node(enum NodeKind kind, YYLTYPE loc) {
   ASTNode *n = calloc(1, sizeof(ASTNode));
 

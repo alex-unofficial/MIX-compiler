@@ -1,5 +1,8 @@
 %option yylineno
 
+%option noinput 
+%option nounput
+
 %{
 #include "parser.tab.h"
 #include <stdlib.h>

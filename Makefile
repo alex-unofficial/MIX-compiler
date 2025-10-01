@@ -26,7 +26,7 @@ EXEC = compiler
 ASCII_FLAG = false
 DEBUG_FLAG = false
 
-CFLAGS = -I$(INC_DIR) -DASCII=$(ASCII_FLAG) -DDEBUG=$(DEBUG_FLAG) -ggdb
+CFLAGS = -I$(INC_DIR) -DASCII=$(ASCII_FLAG) -DDEBUG=$(DEBUG_FLAG) -ggdb -Wall -Wextra
 LDFLAGS = -lfl
 
 all: $(EXEC)

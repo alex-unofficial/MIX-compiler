@@ -6,6 +6,11 @@
 #include <stdint.h>
 #include <string.h>
 
+const char *sym_kind_str[] = {
+  [SYMBOL_PARAM] = "parameter",
+  [SYMBOL_LOCAL] = "variable"
+};
+
 HashTable *ht_new(size_t table_size) {
   if ((table_size & (table_size - 1)) != 0) {
     fprintf(stderr, "implementation error: table size must be a power of 2\n");
@@ -104,7 +109,7 @@ void ht_print(const HashTable *ht) {
 }
 
 void ht_free(HashTable *ht) {
-  for (int i = 0 ; i < ht->table_size ; i++) {
+  for (size_t i = 0 ; i < ht->table_size ; i++) {
     ht_free_entry(ht->buckets[i]);
     ht->buckets[i] = NULL;
   }

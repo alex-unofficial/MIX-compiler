@@ -199,7 +199,7 @@ TERM:
 
 UNARY:
       ADDOP UNARY {
-        if ($1 == OP_ADDOP_SUB) {
+        if ((enum OpKind)$1 == OP_ADDOP_SUB) {
           $$ = ast_new_unary(OP_ADDOP_SUB, $2, @$);
         } else {
           $$ = $2;
@@ -230,8 +230,11 @@ ARGS:
 %%
 
 void yyerror(ASTNode **ast, const char *s) {
+  (void)ast; /* suppress unused parameter warning */
+
   extern char *yytext;
   extern YYLTYPE yylloc;
+
   fprintf(stderr, "error: %s near '%s' at line %d, column %d\n",
           s, yytext, yylloc.first_line, yylloc.first_column);
   fprintf(stderr, "\n");

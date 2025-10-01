@@ -7,6 +7,9 @@
 typedef struct ASTNode ASTNode;
 typedef struct ASTList ASTList;
 
+extern const char *op_kind_str[];
+extern const char *data_type_str[];
+
 enum NodeKind {
   N_PROGRAM,
   N_METHOD,
@@ -35,25 +38,8 @@ enum OpKind {
   OP_MULOP_MUL, OP_MULOP_DIV
 };
 
-static const char *op_kind_str[] = {
-  [OP_RELOP_LEQ] = "<=",
-  [OP_RELOP_LT]  = "<",
-  [OP_RELOP_GT]  = ">",
-  [OP_RELOP_GEQ] = ">=",
-  [OP_RELOP_EQ]  = "==",
-  [OP_RELOP_NEQ] = "!=",
-  [OP_ADDOP_ADD] = "+",
-  [OP_ADDOP_SUB] = "-",
-  [OP_MULOP_MUL] = "*",
-  [OP_MULOP_DIV] = "/"
-}; 
-
 enum DataType {
   TYPE_INT
-};
-
-static const char *data_type_str[] = {
-  [TYPE_INT] = "int"
 };
 
 struct ASTList {
