@@ -3,7 +3,7 @@
 
 #if ASCII
 #define SYMB_ASSIGN "<-"
-#define SYMB_EQUIV "=="
+#define SYMB_EQUIV ":="
 #else
 #define SYMB_ASSIGN "←"
 #define SYMB_EQUIV "≡"
