@@ -453,7 +453,7 @@ int gen_method_entry(const char *method_name, const char *label, unsigned int n_
       >= (int)sizeof(address)) return -1;
   if (emit_inst(NULL, ST(REG_FP), address, "STACK[SP+2] " SYMB_ASSIGN " FP")) return -1;
 
-  // set FP " SYMB_ASSIGN " SP
+  // set FP ← SP
   if (snprintf(address, sizeof(address), "2,%u", REG_SP)
       >= (int)sizeof(address)) return -1;
   if (emit_inst(NULL, ENT(REG_FP), address, "FP " SYMB_ASSIGN " SP + 2")) return -1;
@@ -481,7 +481,7 @@ int gen_method_exit(const char *method_name, unsigned int n_params) {
   if (emit_inst("9H", "LDA", address, "rA " SYMB_ASSIGN " result " SYMB_EQUIV " STACK[SP]")) return -1;
   if (emit_inst(NULL, DEC(REG_SP), "1", "SP " SYMB_ASSIGN " SP - 1")) return -1;
 
-  // set SP " SYMB_ASSIGN " FP (dealloc locals)
+  // set SP ← FP (dealloc locals)
   if (snprintf(address, sizeof(address), "0,%u", REG_FP)
       >= (int)sizeof(address)) return -1;
   if (emit_inst(NULL, ENT(REG_SP), address, "SP " SYMB_ASSIGN " FP")) return -1;
