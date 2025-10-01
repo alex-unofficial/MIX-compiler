@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 
 #ifndef DEBUG
-#define DEBUG 1
+#define DEBUG 0
 #endif
 
 // bison and flex input file.

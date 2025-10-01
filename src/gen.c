@@ -1,6 +1,10 @@
 #include "gen.h"
 #include "emit.h"
 
+#ifndef ASCII
+#define ASCII 0
+#endif
+
 #if ASCII
 #define SYMB_ASSIGN "<-"
 #define SYMB_EQUIV ":="
